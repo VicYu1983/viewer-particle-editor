@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../../Autodesk-Forge-Viewer_v7.52/style.css">
+    <script src="../../../Autodesk-Forge-Viewer_v7.52/viewer3D.js"></script>
+    <script src="../../../lib/viewer3D_extensions.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+
+    <script>
+        let config = {
+            extensions: [],
+            disabledExtensions: {
+                measure: false,
+                section: false,
+            },
+
+            memory: {
+                limit: 32 * 1024 //32 GB
+            }
+        };
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        viewer = new Autodesk.Viewing.Viewer3D(viewerDiv);
+        // viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv, config);
+
+        const options = {
+            docid: "../../../assets/pipe02/3d.svf",
+            env: 'Local',
+            offline: 'true',
+            useADP: false
+        };
+
+        Autodesk.Viewing.Initializer(options, function () {
+            viewer.start();
+            viewer.loadModel(options.docid, undefined, onLoadSuccess, onLoadError);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+        function setMaterialToId(viewer, dbid, material) {
+            const fragProxys = getProxy(viewer, dbid);
+            if (fragProxys.length > 0) {
+                for (let i = 0; i < fragProxys.length; ++i) {
+                    const fragProxy = fragProxys[i];
+                    fragProxy.setMaterial(material);
+                }
+            }
+        }
+
+        function getProxy(viewer, dbid) {
+            const currentModel = viewer.impl.model;
+            const fragProxys = [];
+            viewer.model.getData().fragments.fragId2dbId.forEach(function (_dbId, fragId) {
+                if (_dbId === dbid) {
+                    fragProxys.push(viewer.impl.getFragmentProxy(currentModel, fragId));
+                }
+            });
+            console.log(fragProxys);
+            return fragProxys;
+        }
+
+
+        let loadCount = 0;
+        let currentViewpoint = undefined;
+
+        function onModelLoaded(e) {
+            console.log('等模型讀取完畢換材質才有作用');
+
+            // 用這裏代碼可以查找一樣的dbid是不是有對應到多個fragId
+            // viewer.model.getData().fragments.fragId2dbId.forEach(function (dbId, fragId) {
+            //     console.log(dbId, fragId);
+            // });
+
+            // var cameraPosition = viewer.navigation.getPosition();
+            // // console.log(cameraPosition);
+
+
+            const overlayScene = viewer.impl.createOverlayScene('myOverlayScene');
+            const manholes = [169, 170, 171]
+            // const manholes = [171]
+
+            const BasicShader = threejs.shaders.BasicShader;
+            const mat = threejs.shaders.ShaderTool.getMaterial(undefined, new BasicShader(), 1, true, false);
+            mat.uniforms.baseColor.value.x = .3;
+            mat.uniforms.baseColor.value.y = .3;
+            mat.uniforms.baseColor.value.z = .3;
+            mat.uniforms.baseColor.value.w = .2;
+            viewer.impl.matman().addMaterial("mat", mat, true, false);
+
+            // const mat2 = threejs.shaders.ShaderTool.getMaterial({
+            //     color: {
+            //         type: 'v4',
+            //         value: new THREE.Vector4(0, 0, 1, .2)
+            //     }
+            // }, new BasicShader(), 1, true, false);
+
+            // const waterMaterial = getWaterMaterial(waterUniforms);
+            // viewer.impl.matman().addMaterial("waterMaterial", waterMaterial, true, false);
+
+            for (let i = 0; i < manholes.length; ++i) {
+                const id = manholes[i];
+                setMaterialToId(viewer, id, mat);
+                setMaterialToId(viewer, id, mat);
+                setMaterialToId(viewer, id, mat);
+
+                const proxy = getProxy(viewer, id)[0];
+                var matrix = new THREE.Matrix4();
+                viewer.model.getFragmentList().getWorldMatrix(proxy.fragId, matrix);
+
+                const waterUniforms = {
+                    camera: {
+                        type: 'v4',
+                        value: new THREE.Vector4(0, 0, 0, 1)
+                    },
+                    custom_pos: {
+                        type: 'v4',
+                        value: new THREE.Vector4(0, 0, 0, 1)
+                    }
+                };
+                const waterMaterial = getWaterMaterial(waterUniforms);
+                viewer.impl.matman().addMaterial("waterMaterial_" + i, waterMaterial, true, false);
+
+                const waterMesh = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 1, 16), waterMaterial);
+                waterMesh.position.x = matrix.elements[12] - 2;
+                waterMesh.position.y = matrix.elements[13];
+                waterMesh.position.z = matrix.elements[14] - 25;
+                waterMesh.rotation.x = 3.14159 * 0.5;
+
+                if (i === 1) waterMesh.position.z -= 1;
+                if (i === 2) waterMesh.position.z -= 2;
+
+                waterUniforms.custom_pos.value.x = waterMesh.position.x;
+                waterUniforms.custom_pos.value.y = waterMesh.position.y;
+                waterUniforms.custom_pos.value.z = waterMesh.position.z;
+
+                // waterMesh.position.z += 5;
+                // waterMesh.scale.y = 10;
+
+                viewer.impl.addOverlay("myOverlayScene", waterMesh);
+                
+                waterMeshs.push({
+                    init: waterMesh.position.clone(),
+                    mesh: waterMesh
+                });
+                waterUniformses.push(waterUniforms);
+            }
+
+            var cameraPosition = viewer.navigation.getPosition();
+
+            window.requestAnimationFrame(runAnimation);
+        }
+
+        function getWaterMaterial(uniforms) {
+            const vs =
+                `
+            varying vec2 vUv;
+            varying vec3 pos;
+            varying vec3 nor;
+
+            varying mat4 world_mat;
+            varying vec3 pos_vec;
+            
+            void main() {
+                vUv = uv;
+                pos = position;
+                nor = normal;
+                world_mat = modelMatrix;
+                pos_vec = position;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+            
+            }
+            `;
+
+            const fs =
+                `
+        precision mediump float;
+        varying vec2 vUv;
+        varying vec3 pos;
+        varying vec3 nor;
+
+        varying mat4 world_mat;
+        varying vec3 pos_vec;
+        
+        uniform float time;
+        uniform vec4 camera;
+        uniform vec4 custom_pos;
+
+        #ifdef _LMVWEBGL2_
+            #if defined(MRT_NORMALS)
+            layout(location = 1) out vec4 outNormal;
+            #if defined(MRT_ID_BUFFER)
+                layout(location = 2) out vec4 outId;
+                #if defined(MODEL_COLOR)
+                layout(location = 3) out vec4 outModelId;
+                #endif
+            #endif
+            #elif defined(MRT_ID_BUFFER)
+            layout(location = 1) out vec4 outId;
+            #if defined(MODEL_COLOR)
+                layout(location = 2) out vec4 outModelId;
+            #endif
+            #endif
+        #else
+            #define gl_FragColor gl_FragData[0]
+            #if defined(MRT_NORMALS)
+            #define outNormal gl_FragData[1]
+            #if defined(MRT_ID_BUFFER)
+                #define outId gl_FragData[2]
+                #if defined(MODEL_COLOR)
+                #define outModelId gl_FragData[3]
+                #endif
+            #endif
+            #elif defined(MRT_ID_BUFFER)
+            #define outId gl_FragData[1]
+            #if defined(MODEL_COLOR)
+                #define outModelId gl_FragData[2]
+            #endif
+            #endif
+        #endif
+        
+        void main() {
+            vec4 world_pos = world_mat * vec4(pos_vec,.1);
+
+            vec3 nor2 = vec3(nor.x, -nor.z, nor.y);
+            
+            vec3 camera_dir = normalize(camera.xyz - custom_pos.xyz);
+            float mask = dot(camera_dir,nor2);
+            mask = pow(mask, 0.3);
+            gl_FragColor = vec4(mix(vec3(1., 1., 1.), vec3(0., 0., 1.), mask), mask);
+
+            #ifdef MRT_ID_BUFFER
+            outId = vec4(0.0);
+            #endif
+            #ifdef MODEL_COLOR
+            outModelId = vec4(0.0);
+            #endif
+            #ifdef MRT_NORMALS
+            outNormal = vec4(0.0);
+            #endif
+        }
+        `;
+
+            const material = new THREE.ShaderMaterial({
+                fragmentShader: fs,
+                vertexShader: vs,
+                uniforms: uniforms,
+                transparent: false,
+                depthWrite: true
+                // side: THREE.DoubleSide
+            });
+
+            material.supportsMrtNormals = true;
+
+            return material;
+        }
+
+        // const waterUniforms = threejs.shaders.ShaderTool.getSpriteUniform();
+        // const waterUniforms = {
+        //     camera: {
+        //         type: 'v4',
+        //         value: new THREE.Vector4(0, 0, 0, 1)
+        //     },
+        //     custom_pos: {
+        //         type: 'v4',
+        //         value: new THREE.Vector4(0, 0, 0, 1)
+        //     }
+        // }
+
+
+
+        // const perfectFrameTime = 1000 / 60;
+        var deltaTime = 0;
+        var lastTimestamp = 0;
+        var needUpdate = true;
+        // var wind = new THREE.Vector3(1, 0, 0);
+
+        const waterMeshs = [];
+        const waterUniformses = [];
+
+        function runAnimation(timestamp) {
+            if (needUpdate) window.requestAnimationFrame(runAnimation)
+            // window.requestAnimationFrame(runAnimation)
+
+            deltaTime = (timestamp - lastTimestamp);
+            lastTimestamp = timestamp;
+
+            // console.log(1000/deltaTime);
+
+            // if (ps) ps.update(deltaTime / 1000);
+
+            // wind.x = Math.sin(timestamp * .001) * 0.5 + .5;
+            // wind.z = -.4;
+
+            var cameraPosition = viewer.navigation.getPosition();
+
+            for (let i = 0; i < waterUniformses.length; ++i) {
+                // waterUniforms.time.value = lastTimestamp / 1000;
+                const waterUniforms = waterUniformses[i];
+                waterUniforms.camera.value.x = cameraPosition.x;
+                waterUniforms.camera.value.y = cameraPosition.y;
+                waterUniforms.camera.value.z = cameraPosition.z;
+                waterUniforms.camera.value.w = 1;
+            }
+
+            for (let i = 0; i < waterMeshs.length; ++i) {
+                const waterInit = waterMeshs[i].init;
+                const waterMesh = waterMeshs[i].mesh;
+                const scaleValue = (Math.sin(lastTimestamp * .0005 + i * .6) + 1) * 3 + 2;
+                waterMesh.position.z = waterInit.z + scaleValue;
+                waterMesh.scale.y = scaleValue * 2;
+            }
+
+            // console.log(waterUniforms.camera.value);
+
+            // 如果沒有下這行的話，只有在畫面的視角有變動時，才會更新畫面
+            viewer.impl.sceneUpdated(true)
+        }
+
+        window.addEventListener('blur', (e) => {
+            needUpdate = false;
+        });
+    </script>
+</body>
+
+</html>

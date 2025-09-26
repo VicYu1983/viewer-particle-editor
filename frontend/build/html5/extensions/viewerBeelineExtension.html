@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../../Autodesk-Forge-Viewer_v7.52/style.css">
+    <script src="../../../Autodesk-Forge-Viewer_v7.52/viewer3D.js"></script>
+    <script src="../../../Autodesk-Forge-Viewer_v7.52/extensions/Beeline/Beeline.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+    <script>
+
+        const config3d = {
+            extensions: ['Autodesk.Beeline']
+        };
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        const viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv, config3d);
+
+        const options = {
+            docid: "../../../assets/room/3d.svf",
+            env: 'Local',
+            offline: 'false',
+            useADP: false
+        };
+
+
+        Autodesk.Viewing.Initializer(options, function () {
+
+            viewer.start();
+            viewer.loadModel(options.docid, undefined, onLoadSuccess, onLoadError);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+        function onModelLoaded() {
+            console.log('等模型讀取完畢換材質才有作用');
+        }
+
+    </script>
+</body>
+
+</html>

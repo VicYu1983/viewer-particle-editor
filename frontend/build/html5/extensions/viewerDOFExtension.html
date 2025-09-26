@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../../Autodesk-Forge-Viewer_v7.52/style.css">
+    <script src="../../../Autodesk-Forge-Viewer_v7.52/viewer3D.js"></script>
+    <script src="../../../Autodesk-Forge-Viewer_v7.52/extensions/DOF/DOF.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+    <script>
+
+        const config3d = {
+            extensions: ['Autodesk.DOF']
+        };
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        // const viewer = new Autodesk.Viewing.Viewer3D(viewerDiv);
+        const viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv, config3d);
+        
+        const options = {
+            docid: "../../../assets/room/3d.svf",
+            // docid: "../../../assets/sample5/3d.svf",
+            env: 'Local',
+            offline: 'false',
+            useADP: false
+        };
+
+        const viewerOptions = {
+            fog: {
+                color: [1, 1, 1],
+                near: .1,
+                far: 40
+            }
+        };
+
+
+
+        Autodesk.Viewing.Initializer(options, function () {
+            
+            // 測試開啓fog
+            // viewer.start(null, null, null, null, viewerOptions);
+            viewer.start();
+
+            NOP_VIEWER.loadExtension('Autodesk.DOF');
+
+            viewer.loadModel(options.docid, undefined, onLoadSuccess, onLoadError);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+        function setMaterialByIdCollection(viewer, fromId, toId, material) {
+            for (let i = fromId; i <= toId; ++i) {
+                setMaterialById(viewer, i, material);
+            }
+        }
+
+        function setMaterialById(viewer, dbid, material) {
+            const model = viewer.impl.model;
+            const instanceTree = model.getData().instanceTree;
+
+            // 获取指定 dbId 对应的 fragIds
+            const fragIds = [];
+            instanceTree.enumNodeFragments(dbid, (fragId) => {
+                fragIds.push(fragId);
+            });
+
+            // 确保找到对应的 fragIds
+            if (fragIds.length === 0) {
+                console.warn(`No fragments found for dbId: ${dbid}`);
+                return;
+            }
+
+            // 为每个 fragId 设置新的材质
+            fragIds.forEach((fragId) => {
+                const fragProxy = viewer.impl.getFragmentProxy(model, fragId);
+                if (fragProxy) {
+                    fragProxy.setMaterial(material);
+
+                    // 更新动画变换以应用材质更改
+                    fragProxy.updateAnimTransform();
+
+                    // 通知 Viewer 需要重新渲染
+                    viewer.impl.invalidate(true, true, true);
+                } else {
+                    console.warn(`Fragment proxy not found for fragId: ${fragId}`);
+                }
+            });
+
+            // 通知 Viewer 场景已更新
+            viewer.impl.sceneUpdated(true);
+        }
+
+        let uniform = null;
+
+        function onModelLoaded() {
+            console.log('等模型讀取完畢換材質才有作用');
+
+            // const sliceShader = new threejs.shaders.SliceShader();
+            // uniform = sliceShader.getUniforms();
+
+            // const sliceMaterial = new THREE.ShaderMaterial({
+            //     fragmentShader: sliceShader.getFragmentShader(),
+            //     vertexShader: sliceShader.getVertexShader(),
+            //     uniforms: uniform,
+            //     transparent: true,
+            //     depthWrite: true
+            // });
+
+            // sliceMaterial.supportsMrtNormals = true;
+            // viewer.impl.matman().addMaterial("sliceMaterial", sliceMaterial, true);
+
+            // // setMaterialById(viewer, 4, sliceMaterial);
+            // // setMaterialById(viewer, 5, sliceMaterial);
+
+            // setMaterialByIdCollection(viewer, 40000, 70000, sliceMaterial);
+
+            // window.requestAnimationFrame(runAnimation);
+        }
+
+        var deltaTime = 0;
+        var lastTimestamp = 0;
+
+        function runAnimation(timestamp) {
+            window.requestAnimationFrame(runAnimation)
+
+            deltaTime = (timestamp - lastTimestamp);
+            lastTimestamp = timestamp;
+
+            if (uniform != null) {
+                uniform.distance.value = Math.sin(lastTimestamp * .0005) * 15 - 5.0;
+            }
+
+            viewer.impl.sceneUpdated(true)
+        }
+
+    </script>
+</body>
+
+</html>

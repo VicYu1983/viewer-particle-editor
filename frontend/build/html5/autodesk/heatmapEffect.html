@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
+    <script src="../../../lib/viewer3D_extensions.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+
+    <script>
+
+        const BasicShader = threejs.shaders.BasicShader;
+
+        class HeatmapEffectShader extends BasicShader {
+            constructor() {
+                super();
+            }
+
+            doWriteFragmentShader() {
+                return `
+                    vec4 poses[3] = vec4[3](posA, posB, posC);
+                    float alldistance = 0.0;
+
+                    for(int i = 0; i < poses.length(); ++i){
+                        vec3 offsetUv = pos.xyz - poses[i].xyz;
+                        float distance = length(offsetUv);
+                        alldistance += distance;
+                    }
+
+                    alldistance *= 0.07 ;
+                    alldistance = clamp(1.0 - alldistance, 0.0, 1.0);
+                    vec4 c4 = texture2D(heatTex, vec2(alldistance, 0.5));
+                    gl_FragColor = vec4(c4.xyz, 1.);
+
+                `;
+            }
+
+            doWriteFragmentUniform() {
+                return super.doWriteFragmentUniform() + `
+                    uniform vec4 posA;
+                    uniform vec4 posB;
+                    uniform vec4 posC;
+                    uniform sampler2D heatTex;
+                `;
+            }
+
+            getUniforms() {
+                const uniforms = super.getUniforms();
+                uniforms.heatTex = {
+                    type: 't',
+                    value: undefined
+                };
+                uniforms.posA = {
+                    type: 'v4',
+                    value: new THREE.Vector4(0, 0, 0, 0),
+                };
+                uniforms.posB = {
+                    type: 'v4',
+                    value: new THREE.Vector4(0, 0, 0, 0),
+                };
+                uniforms.posC = {
+                    type: 'v4',
+                    value: new THREE.Vector4(0, 0, 0, 0),
+                };
+                return uniforms;
+            }
+        }
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        viewer = new Autodesk.Viewing.Viewer3D(viewerDiv);
+
+        const options = {
+            docid: "../../../assets/plane_uv_gltf2.glb",
+            env: 'Local',
+            offline: 'true',
+            useADP: false
+        };
+        Autodesk.Viewing.Initializer(options, function () {
+            viewer.start();
+            viewer.loadModel(options.docid, undefined, onLoadSuccess, onLoadError);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+        viewer.setQualityLevel(false, false);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+        function onModelLoaded() {
+            console.log('等模型讀取完畢換材質才有作用');
+
+            // create shader start
+            const heatmapEffectShader = new HeatmapEffectShader();
+            uniforms = heatmapEffectShader.getUniforms();
+            const material = new THREE.ShaderMaterial({
+                fragmentShader: heatmapEffectShader.getFragmentShader(),
+                vertexShader: heatmapEffectShader.getVertexShader(),
+                uniforms: uniforms,
+                side: THREE.DoubleSide
+            });
+
+            material.supportsMrtNormals = true;
+            viewer.impl.matman().addMaterial("heatmapEffectShader", material, true)
+            // create shader end
+
+            // assign material start
+            const currentModel = viewer.impl.model;
+            const fragIds = Object.keys(currentModel.getData().fragments.fragId2dbId);
+            const fragProxy = viewer.impl.getFragmentProxy(currentModel, fragIds[0]);
+            fragProxy.setMaterial(material);
+            // assign material end
+
+            var loader = new THREE.TextureLoader();
+            loader.load('../../../assets/heatmap.png', function (t) {
+                t.minFilter = THREE.LinearMipMapLinearFilter;
+                t.magFilter = THREE.LinearFilter;
+                uniforms.heatTex.value = t;
+            });
+
+            runAnimation();
+        }
+
+        let uniforms = undefined;
+        let time = 0;
+        function runAnimation() {
+            window.requestAnimationFrame(runAnimation)
+
+            if (uniforms) {
+                time += .01;
+                let posTime = time;
+
+                uniforms.posA.value.x = Math.cos(time * 3) * 2.0;
+                uniforms.posA.value.y = Math.cos(time * 1) * 1.0;
+                uniforms.posA.value.z = Math.sin(time * 2) * 3.0;
+
+                posTime += .6;
+
+                uniforms.posB.value.x = Math.cos(time * 2) * 3.0;
+                uniforms.posB.value.y = Math.sin(time * 1) * 3.0;
+                uniforms.posB.value.z = Math.sin(time * 5) * 1.0;
+
+                posTime += .6;
+
+                uniforms.posC.value.x = Math.cos(time * 1) * 4.0;
+                uniforms.posC.value.y = Math.cos(time * 2) * 3.0;
+                uniforms.posC.value.z = Math.sin(time * 3) * 1.0;
+            }
+
+            // 如果沒有下這行的話，只有在畫面的視角有變動時，才會更新畫面
+            viewer.impl.sceneUpdated(true)
+        }
+
+
+    </script>
+</body>
+
+</html>

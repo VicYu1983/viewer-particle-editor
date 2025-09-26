@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../../Autodesk-Forge-Viewer_v7.52/style.css">
+    <script src="../../../Autodesk-Forge-Viewer_v7.52/viewer3D.js"></script>
+    <script src="../../../lib/viewer3D_extensions.js"></script>
+    <script src="../../../js/FireShader.js"></script>
+    <script src="../../../js/FireGlowShader.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+
+
+    <script>
+
+        const Particle = threejs.particle.system.Particle;
+        const Emitter = threejs.particle.system.Emitter;
+        const ParticleSystem = threejs.particle.system.ParticleSystem;
+
+        let config = {
+            extensions: [],
+            disabledExtensions: {
+                measure: false,
+                section: false,
+            },
+
+            memory: {
+                limit: 32 * 1024 //32 GB
+            }
+        };
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        viewer = new Autodesk.Viewing.Viewer3D(viewerDiv);
+
+        const options = {
+            docid: "../../../assets/sample2/3d.svf",
+            env: 'Local',
+            offline: 'true',
+            useADP: false
+        };
+        Autodesk.Viewing.Initializer(options, function () {
+            viewer.start();
+            viewer.loadModel(options.docid, undefined, onLoadSuccess, onLoadError);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+        function onModelLoaded() {
+            console.log('等模型讀取完畢換材質才有作用');
+
+            // create shader start
+            const fireShader = new vic.shaders.FireShader();
+            // const fireShader = new vic.shaders.GrowEffectShader();
+
+            const fireMaterial = new THREE.ShaderMaterial({
+                fragmentShader: fireShader.getFragmentShader(),
+                vertexShader: fireShader.getVertexShader(),
+                uniforms: fireShader.getUniforms(),
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+
+                // 用threejs的mesh的話，要關閉depthWrite，否則渲染不出透明度
+                depthWrite: false,
+                side: THREE.DoubleSide
+            });
+
+            fireMaterial.supportsMrtNormals = true;
+            viewer.impl.matman().addMaterial("fireMaterial", fireMaterial, true);
+
+
+            const fireGlowShader = new vic.shaders.FireGlowShader();
+            const fireGlowMaterial = new THREE.ShaderMaterial({
+                fragmentShader: fireGlowShader.getFragmentShader(),
+                vertexShader: fireGlowShader.getVertexShader(),
+                uniforms: fireGlowShader.getUniforms(),
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+
+                // 用threejs的mesh的話，要關閉depthWrite，否則渲染不出透明度
+                depthWrite: false,
+                side: THREE.DoubleSide
+            });
+
+            fireGlowMaterial.supportsMrtNormals = true;
+            viewer.impl.matman().addMaterial("fireGlowMaterial", fireGlowMaterial, true);
+
+            ps.setViewer(viewer);
+
+            var geom = new THREE.PlaneGeometry(.1, .1);
+            var emitterMesh = new THREE.Mesh(geom, fireMaterial);
+
+            const p = new Particle(emitterMesh, new threejs.particle.system.ParticlePool());
+            p.randomRotate = 3.14;
+            p.randomPosition.x = .1;
+            p.randomPosition.y = .1;
+            p.randomPosition.z = .1;
+            p.randomSize = 3;
+            p.rotateSpeed = .01;
+            p.size = 7;
+            p.sizeIn = .3;
+            p.sizeOut = .7;
+            p.deadAge = 1;
+            p.randomDeadAge = 1.0;
+
+            const e = new Emitter();
+            e.setPosition(0, -0.6, 0.7);
+            e.setParticle(p);
+            e.spray.rate = 20;
+
+            e.spray.verticalAngle = 3.14 * 0.5;
+            e.spray.horizonRandom = .2;
+            e.spray.verticalRandom = .2;
+            e.spray.force = .65;
+            e.deadAge = 30;
+            ps.addEmitter(e);
+
+            emitterMesh = new THREE.Mesh(geom, fireGlowMaterial);
+            const p2 = new Particle(emitterMesh, new threejs.particle.system.ParticlePool());
+            p2.randomPosition.x = .01;
+            p2.randomPosition.y = .01;
+            p2.randomPosition.z = .01;
+            p2.randomSize = 6;
+            p2.size = 25;
+            p2.sizeIn = .02;
+            p2.sizeOut = .02;
+            p2.deadAge = .05;
+            p2.randomDeadAge = 0.02;
+
+            const e2 = new Emitter();
+            e2.setPosition(0, -0.6, 1.1);
+            e2.setParticle(p2);
+            e2.spray.rate = 20;
+
+            e2.spray.verticalAngle = 3.14 * 0.5;
+            // e2.spray.horizonRandom = .2;
+            // e2.spray.verticalRandom = .2;
+            e2.spray.force = 0;
+            e2.deadAge = 30;
+            ps.addEmitter(e2);
+
+            window.requestAnimationFrame(runAnimation)
+
+            viewer.setBackgroundColor(200, 200, 200, 0, 0, 0);
+        }
+
+        // var billboardUniform = threejs.shaders.ShaderTool.getSpriteUniform();
+
+        // const ps = ParticleSystem.getInstance();
+        const ps = ParticleSystem.getInstance();
+
+        var deltaTime = 0;
+        var lastTimestamp = 0;
+        var needUpdate = true;
+
+        function runAnimation(timestamp) {
+            if (needUpdate) window.requestAnimationFrame(runAnimation)
+
+            deltaTime = (timestamp - lastTimestamp);
+            lastTimestamp = timestamp;
+
+            if (ps) ps.update(deltaTime / 1000);
+
+            // billboardUniform.time.value = lastTimestamp / 1000;
+
+            // 如果沒有下這行的話，只有在畫面的視角有變動時，才會更新畫面
+            viewer.impl.sceneUpdated(true)
+        }
+
+        window.addEventListener('blur', (e) => {
+            needUpdate = false;
+        });
+    </script>
+</body>
+
+</html>

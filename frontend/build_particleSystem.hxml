@@ -1,0 +1,8 @@
+-dce full
+-js lib/viewer3D_extensions.js
+-main MainParticle
+-cp src
+
+-lib haxeui-core
+-lib haxeui-html5
+-lib openfl

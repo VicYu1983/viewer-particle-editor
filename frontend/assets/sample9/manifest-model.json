@@ -1,0 +1,63 @@
+{
+  "version": "1.0",
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6b25ld29yay9pbnB1dC5ydnQ==",
+  "type": "manifest",
+  "progress": "complete",
+  "status": "success",
+  "hasThumbnail": "false",
+  "region": "US",
+  "derivatives": [
+    {
+      "outputType": "svf",
+      "status": "success",
+      "name": "input.nwc",
+      "hasThumbnail": "false",
+      "progress": "complete",
+      "children": [
+        {
+          "type": "geometry",
+          "role": "3d",
+          "status": "success",
+          "name": "3d",
+          "hasThumbnail": "false",
+          "progress": "complete",
+          "guid": "88a5bb8c-9379-454b-a942-cb8280bed10c",
+          "children": [
+            {
+              "type": "view",
+              "role": "3d",
+              "status": "success",
+              "name": "Default",
+              "progress": "complete",
+              "guid": "690a4ece-83af-4322-98c4-86c36087079d",
+              "camera": [
+                -1.6000000238418579,
+                -8.5342464447021484,
+                -2.0935588196857244E-15,
+                -1.6000000238418579,
+                6.25,
+                1.1892033412424629E-15,
+                0.0,
+                -2.2204460492503131E-16,
+                1.0,
+                1.4600484371185303,
+                0.7853980302393937,
+                14.784246444702148,
+                0.0
+              ]
+            },
+            {
+              "type": "resource",
+              "role": "3d",
+              "mime": "application/autodesk-svf",
+              "urn": "urn:adsk.viewing:fs.file:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6b25ld29yay9pbnB1dC5ydnQ==/3d.svf",
+              "progress": "graphics",
+              "guid": "4256dd10-cbc4-4849-885a-8b1d898ebeac"
+            }
+          ],
+          "viewableID": "690a4ece-83af-4322-98c4-86c36087079d"
+        }
+      ]
+    }
+  ]
+}

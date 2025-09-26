@@ -1,0 +1,406 @@
+<vbox width="100%" height="100%" style="padding: 5px;">
+    <menubar width="100%">
+        <menu text="檔案">
+            <menuitem id="btn_saveToServer" text="雲端檔案" />
+            <!-- <menuitem id="btn_loadFromServer" text="打開雲端檔案" /> -->
+            <menuitem id="btn_save" text="儲存檔案" />
+            <menuitem id="btn_load" text="打開檔案" disabled="false" />
+            <menuitem id="btn_clearAll" text="清空所有" disabled="true" />
+        </menu>
+        <menu text="粒子">
+            <menu text="創建">
+                <menuitem id="btn_createOneLevelParticle" value="一階發射器"></menuitem>
+                <menuitem id="btn_createTwoLevelParticle" value="二階發射器"></menuitem>
+            </menu>
+            <menuitem id="btn_removeParticle" value="刪除所選發射器"></menuitem>
+            <menuitem id="btn_clearParticles" text="清空所有發射器" disabled="false" />
+            <menuitem id="btn_refresh" value="重置所有發射器" shortcutText="Alt+R"></menuitem>
+            <menuitem id="btn_export" text="導出效果" />
+        </menu>
+        <menu text="材質">
+            <menu text="創建">
+                <menuitem id="btn_addPhoneMaterial" value="光照"></menuitem>
+                <menuitem id="btn_addColorMaterial" value="純色"></menuitem>
+                <menuitem id="btn_addSpriteMaterial" value="廣告版"></menuitem>
+                <menuitem id="btn_addParticleSpriteMaterial" value="粒子廣告版"></menuitem>
+            </menu>
+            <menuitem id="btn_removeMaterial" value="刪除所選材質"></menuitem>
+        </menu>
+        <!-- 
+        <menu text="Icons">
+            <menuitem text="Item 1" icon="icons/16/scroll_pane_text.png" shortcutText="Ctrl+A" />
+            <menuitem text="Item 2" icon="icons/16/scroll_pane_text_image.png" shortcutText="Ctrl+B" />
+            <menuitem text="Item 3 (disabled)" icon="icons/16/tab_content.png" disabled="true"
+                shortcutText="Ctrl+C" />
+            <menuitem text="Item 4" icon="icons/16/table.png" shortcutText="Ctrl+D" />
+            <menuitem text="Item 5" icon="icons/16/list_box.png" shortcutText="Ctrl+E" />
+        </menu>
+
+        <menu text="Any Content #1">
+            <vbox width="100%">
+                <listview id="lv2" width="100%" height="150" selectedIndex="1" style="border:none;">
+                    <item-renderer layoutName="horizontal" width="100%">
+                        <checkbox id="complete" />
+                        <label width="100%" id="item" />
+                        <image id="image" />
+                    </item-renderer>
+                    <data>
+                        <item complete="false" item="Item 1"
+                            image="haxeui-core/styles/default/haxeui_tiny.png" />
+                        <item complete="true" item="Item 2"
+                            image="haxeui-core/styles/default/haxeui_tiny.png" />
+                        <item complete="true" item="Item 3"
+                            image="haxeui-core/styles/default/haxeui_tiny.png" />
+                        <item complete="false" item="Item 4"
+                            image="haxeui-core/styles/default/haxeui_tiny.png" />
+                        <item complete="true" item="Item 5"
+                            image="haxeui-core/styles/default/haxeui_tiny.png" />
+                        <item complete="true" item="Item 6"
+                            image="haxeui-core/styles/default/haxeui_tiny.png" />
+                        <item complete="false" item="Item 7"
+                            image="haxeui-core/styles/default/haxeui_tiny.png" />
+                        <item complete="true" item="Item 8"
+                            image="haxeui-core/styles/default/haxeui_tiny.png" />
+                        <item complete="false" item="Item 9"
+                            image="haxeui-core/styles/default/haxeui_tiny.png" />
+                    </data>
+                </listview>
+            </vbox>
+        </menu>
+
+        <menu text="Any Content #2">
+            <vbox width="100%">
+                <property-grid id="pg" width="100%" height="300" style="border:none;">
+                    <property-group text="Primary Group">
+                        <property id="stringProp" label="String Property" value="Value 1" />
+                        <property id="boolProp" label="Bool Property" type="boolean" value="true" />
+                        <property id="intProp" label="Int Property" type="int" value="101" />
+                        <property id="listProp" label="List Property" type="list" value="Item 1">
+                            <data>
+                                <item text="Item 1" />
+                                <item text="Item 2" />
+                                <item text="Item 3" />
+                                <item text="Item 4" />
+                                <item text="Item 5" />
+                                <item text="Item 6" />
+                            </data>
+                        </property>
+                    </property-group>
+
+                    <property-group text="Secondary Group">
+                        <property label="String Property" value="Value 2" />
+                        <property label="Bool Property" type="boolean" value="false" />
+                        <property label="Int Property" type="int" value="102" />
+                        <property label="List Property" type="list" value="Item 2">
+                            <data>
+                                <item text="Item 1" />
+                                <item text="Item 2" />
+                                <item text="Item 3" />
+                                <item text="Item 4" />
+                                <item text="Item 5" />
+                                <item text="Item 6" />
+                            </data>
+                        </property>
+                    </property-group>
+
+                    <property-group text="Tertiary Group">
+                        <property label="String Property" value="Value 3" />
+                        <property label="Bool Property" type="boolean" value="true" />
+                        <property label="Int Property" type="int" value="103" />
+                        <property label="List Property" type="list" value="Item 3">
+                            <data>
+                                <item text="Item 1" />
+                                <item text="Item 2" />
+                                <item text="Item 3" />
+                                <item text="Item 4" />
+                                <item text="Item 5" />
+                                <item text="Item 6" />
+                            </data>
+                        </property>
+                    </property-group>
+                </property-grid>
+            </vbox>
+        </menu>
+
+        <menu text="Any Content #3">
+            <vbox width="100%" style="padding: 5px;">
+                <slider width="100%" majorTicks="10" minorTicks="5" pos="70" />
+                <slider width="100%" majorTicks="10" minorTicks="5" pos="20" />
+                <slider width="100%" majorTicks="10" minorTicks="5" pos="50" />
+                <spacer height="5" />
+                <button-bar selectedIndex="1" width="100%">
+                    <button text="A" width="33%" />
+                    <button text="B" width="34%" />
+                    <button text="C" width="33%" />
+                </button-bar>
+            </vbox>
+        </menu>
+
+        <spacer width="100%" />
+
+        <button text="A Button" />
+        <menu text="Help">
+            <menuitem text="Item 1" />
+            <menuitem text="Item 2" />
+            <menuitem text="Item 3" />
+            <menuitem text="Item 4" />
+            <menuitem text="Item 5" />
+        </menu> -->
+    </menubar>
+    <hbox width="100%" height="100%">
+        <!-- <panel text="Panel Title" width="100%" height="200">
+            <box width="100%" height="100%">
+                <label text="Panel Content" horizontalAlign="center" verticalAlign="center" />
+            </box>
+        </panel> -->
+
+
+        <vbox width="330" height="100%">
+            <!-- <button id="btn_refresh" value="重置" width="100%"></button> -->
+            <tabview id="tv1" width="100%" height="100%" styleName="full-width-buttons">
+                <vbox width="100%" height="100%" text="粒子">
+
+                    <tree-view id="tv_particleList" width="100%" height="150" />
+                    <!-- <hbox width="100%">
+                        <button id="btn_createOneLevelParticle" value="一階" width="100%"></button>
+                        <button id="btn_createTwoLevelParticle" value="二階" width="100%"></button>
+                        <button id="btn_removeParticle" value="刪除" width="100%"></button>
+                    </hbox> -->
+                    <vbox width="100%" height="100%">
+                        <scrollview id="box_pProperties" width="100%" height="100%"
+                            contentWidth="100%"></scrollview>
+                    </vbox>
+                    <property-grid id="pg_particleSetting" width="100%">
+                        <property-group text="其他">
+                            <property id="pro_pName" label="名稱" value="" />
+                            <property id="pro_pParent" label="父親" type="list" value="無"
+                                disabled="true" />
+                            <property id="pro_pGeometry" label="粒子模型" type="list" ></property>
+                        </property-group>
+                    </property-grid>
+                </vbox>
+                <vbox width="100%" height="100%" text="幾何">
+                    <tableview id="tv_geometryList" width="100%" height="200" contentWidth="100%">
+                        <header width="500">
+                            <column id="id" text="id" width="30" />
+                            <column id="name" text="名稱" width="100" />
+                            <column id="category" text="類型" width="100" />
+                            <column id="describtion" text="描述" width="100%" />
+                        </header>
+                        <data>
+                            <!-- <item id="0" name="平面" category="平面" /> -->
+                        </data>
+                    </tableview>
+                    <button id="btn_removeGeometry" value="刪除" width="100%"></button>
+                    <tabview id="tv1" width="100%">
+                        <vbox width="100%" text="平面">
+                            <property-grid id="pg_planeConsSetting" width="100%">
+                                <property-group text="創建參數">
+                                    <property id="pro_planeConsWidth" label="長度" type="float"
+                                        value="1.0" />
+                                    <property id="pro_planeConsHeight" label="寬度" type="float"
+                                        value="1.0" />
+                                </property-group>
+                            </property-grid>
+                            <button id="btn_addPlane" value="新增" width="100%"></button>
+                        </vbox>
+                        <vbox width="100%" text="球體">
+                            <property-grid id="pg_sphereConsSetting" width="100%">
+                                <property-group text="創建參數">
+                                    <property id="pro_sphereConsRadius" label="半徑" type="float"
+                                        value="1.0" />
+                                </property-group>
+                            </property-grid>
+                            <button id="btn_addSphere" value="新增" width="100%"></button>
+                        </vbox>
+                        <vbox width="100%" text="方體">
+                            <property-grid id="pg_boxConsSetting" width="100%">
+                                <property-group text="創建參數">
+                                    <property id="pro_boxConsWidth" label="長度" type="float"
+                                        value="1.0" />
+                                    <property id="pro_boxConsDepth" label="寬度" type="float"
+                                        value="1.0" />
+                                    <property id="pro_boxConsHeight" label="高度" type="float"
+                                        value="1.0" />
+                                </property-group>
+                            </property-grid>
+                            <button id="btn_addBox" value="新增" width="100%"></button>
+                        </vbox>
+                    </tabview>
+
+                    <property-grid id="pg_geometrySetting" width="100%" height="100%">
+
+                        <property-group text="">
+                            <property id="pro_gName" label="名稱"></property>
+                            <property id="pro_gMaterial" label="材質" type="list">
+                                <!-- <data>
+                                    <item text="平面" buffer="PlaneBufferGeometry" />
+                                    <item text="球體" buffer="SphereGeometry" />
+                                    <item text="方體" buffer="BoxGeometry" />
+                                </data> -->
+                            </property>
+                        </property-group>
+
+                    </property-grid>
+
+                </vbox>
+                <vbox width="100%" height="100%" text="材質" disabled="false">
+                    <tableview id="tv_materialList" width="100%" height="200" contentWidth="100%">
+                        <header width="500">
+                            <column id="id" text="id" width="30" />
+                            <column id="name" text="名稱" width="100" />
+                            <column id="category" text="類型" width="140" />
+                            <column id="describtion" text="描述" width="100%" />
+                        </header>
+                        <data>
+                            <!-- <item id="0" name="材質一" category="基本" /> -->
+                        </data>
+                    </tableview>
+                    <!-- <button id="btn_removeMaterial" value="刪除" width="100%"></button> -->
+                    <!-- <hbox width="100%">
+                        <dropdown id="dd_createMaterialList" text="顔色" width="100%">
+                            <data>
+                                <item text="光照" />
+                                <item text="純色" />
+                                <item text="廣告版" />
+                                <item text="粒子廣告版" />
+                            </data>
+                        </dropdown>
+                        <button id="btn_addMaterial" value="創建" width="100%"></button>
+                    </hbox> -->
+                    <property-grid id="pg_shaderSetting" width="100%">
+                        <property-group text="設定">
+                            <property id="pro_shaderBlending" label="混合類型" type="list"
+                                value="不混合">
+                                <data>
+                                    <!-- 對應threejs裏的blending代碼 -->
+                                    <!-- var NoBlending = 0;
+                                    var NormalBlending = 1;
+                                    var AdditiveBlending = 2;
+                                    var SubtractiveBlending = 3;
+                                    var MultiplyBlending = 4;
+                                    var CustomBlending = 5; -->
+                                    <item id="0" text="不混合"></item>
+                                    <item id="1" text="一般混合"></item>
+                                    <item id="2" text="叠加混合"></item>
+                                    <item id="3" text="相減混合"></item>
+                                    <item id="4" text="相乘混合"></item>
+                                </data>
+                            </property>
+                            <property id="pro_shaderSide" label="面向" type="list"
+                                value="前面">
+                                <data>
+                                    <!-- 對應threejs裏的side代碼 -->
+                                    <!-- 
+                                    var FrontSide = 0;
+	                                var BackSide = 1;
+	                                var DoubleSide = 2; 
+                                    -->
+                                    <item id="0" text="前面"></item>
+                                    <item id="1" text="背面"></item>
+                                    <item id="2" text="雙面"></item>
+                                </data>
+                            </property>
+                            <property id="pro_shaderTransparent" label="允許透明" type="boolean"
+                                value="false" />
+                            <property id="pro_shaderDepthWrite" label="深度寫入" type="boolean"
+                                value="false" />
+                            <property id="pro_shaderOpacity" label="透明度" type="float"
+                                value="1.0" />
+                        </property-group>
+                    </property-grid>
+                    <!-- <tabview id="tab_createMaterial" width="100%">
+                        <vbox width="100%" text="顔色">
+                            <property-grid id="pg_planeConsSetting" width="100%">
+                                <property-group text="創建參數">
+                                    <property id="pro_planeConsWidth" label="長度" type="float"
+                                        value="1.0" />
+                                    <property id="pro_planeConsHeight" label="寬度" type="float"
+                                        value="1.0" />
+                                </property-group>
+                            </property-grid>
+                            <button id="btn_addPlane" value="新增" width="100%"></button>
+                        </vbox>
+                    </tabview> -->
+                    <vbox id="vbox_basicShader" width="100%">
+                        <section-header text="顔色材質設定" />
+                        <color-picker-popup id="cp_basic_baseColor" width="100%" />
+                    </vbox>
+                    <vbox id="vbox_phongShader" width="100%">
+                        <section-header text="馮恩材質設定" />
+                        <hbox width="100%">
+                            <color-picker-popup id="cp_phong_baseColor" width="100%" />
+                            <color-picker-popup id="cp_phong_specularColor" width="100%" />
+                            <color-picker-popup id="cp_phong_emissiveColor" width="100%" />
+                        </hbox>
+
+                        <!-- <property-grid id="pg_phongShaderSetting" width="100%">
+                            <property-group text="設定">
+                                <property id="pro_phongShaderShininess" label="高光" type="float"
+                                    value="0.0" />
+                                <property id="pro_particleShaderUsingNoise" label="噪聲"
+                                    type="boolean" value="false" />
+                                <property id="pro_particleShaderUsingMask" label="遮罩" type="boolean"
+                                    value="false" />
+                            </property-group>
+                        </property-grid> -->
+                    </vbox>
+                    <vbox id="vbox_particleShader" width="100%">
+                        <section-header text="粒子專用材質設定" />
+                        <color-picker-popup id="cp_particle_baseColor" width="100%" />
+                        <property-grid id="pg_particleShaderSetting" width="100%">
+                            <property-group text="設定">
+                                <property id="pro_particleShaderUsingTex" label="貼圖" type="boolean"
+                                    value="false" />
+                                <property id="pro_particleShaderUsingNoise" label="噪聲"
+                                    type="boolean" value="false" />
+                                <property id="pro_particleShaderUsingMask" label="遮罩" type="boolean"
+                                    value="false" />
+                            </property-group>
+                        </property-grid>
+                    </vbox>
+                    <!-- <vbox id="vbox_particleSpriteShader" width="100%">
+                        <color-picker-popup id="cp_basic_color" width="100%" />
+                    </vbox> -->
+                </vbox>
+                <vbox width="100%" height="100%" text="作用力">
+
+                </vbox>
+                <vbox width="100%" height="100%" text="環境">
+                    <hbox width="100%">
+                        <color-picker-popup id="cp_backColorTop" width="50%" />
+                        <color-picker-popup id="cp_backColorBottom" width="50%" />
+                    </hbox>
+                    <property-grid id="pg_viewerSetting" width="100%">
+                        <property-group text="環境設定">
+                            <!-- <property id="stringProp" label="String Property" value="Value 1"
+                            /> -->
+                            <property id="drp_loadModel" label="預覽模型" type="list" value="sample2">
+                                <data>
+                                    <item text="sample2" path="../../assets/sample2/3d.svf" />
+                                    <item text="sample4" path="../../assets/sample4/3d.svf" />
+                                    <item text="sample5" path="../../assets/sample5/3d.svf" />
+                                    <item text="sample9" path="../../assets/sample9/3d.svf" />
+                                    <item text="sample10" path="../../assets/sample10/3d.svf" />
+                                    <item text="sample11" path="../../assets/sample11/3d.svf" />
+                                    <item text="pipe02" path="../../assets/pipe02/3d.svf" />
+                                    <item text="room" path="../../assets/room/3d.svf" />
+                                </data>
+                            </property>
+                            <property id="pro_scene" label="顯示場景模型" type="boolean" value="false" />
+                            <property id="pro_reflect" label="地面反射" type="boolean" value="false" />
+                            <property id="pro_shadow" label="地面陰影" type="boolean" value="false" />
+                            <property id="pro_ambient" label="環境陰影" type="boolean" value="false" />
+                            <property id="pro_envId" label="環境代碼" type="int" value="0" />
+
+                        </property-group>
+
+                    </property-grid>
+                </vbox>
+            </tabview>
+
+
+        </vbox>
+        <vbox id="viewerDiv" width="100%" height="100%"></vbox>
+    </hbox>
+</vbox>

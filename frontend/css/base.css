@@ -1,0 +1,295 @@
+html {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-size: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #ececec;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+ul,
+li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+input,
+a {
+    font-weight: 100;
+    margin: 0;
+}
+
+input:focus {
+    outline: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    vertical-align: middle;
+    outline: none;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: $light-grey;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: hsla(186, 38%, 84%, 0.8);
+}
+
+::-webkit-scrollbar-track-piece {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+#app {
+    min-width:344px; //960px;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+}
+
+.setup-container {
+     ::-webkit-input-placeholder {
+        color: $blue;
+    }
+     :-moz-placeholder {
+        color: $blue;
+    }
+     ::-moz-placeholder {
+        color: $blue;
+    }
+     :-ms-input-placeholder {
+        color: $blue;
+    }
+}
+
+.login-container{
+    ::-webkit-input-placeholder {
+        color: $pink;
+    }
+
+    :-moz-placeholder {
+        color: $pink;
+    }
+
+    ::-moz-placeholder {
+        color: $pink;
+    }
+
+    :-ms-input-placeholder {
+        color: $pink;
+    }
+}
+
+// outer layer,
+.page-container {
+    position: relative;
+}
+
+.basebg-color {
+    width: 100vw;
+    height: 100vh;
+
+    background: #007dc5;
+    /* Old browsers */
+
+    background: -moz-linear-gradient(-45deg, #007dc5 45%, #21bbaf 100%);
+    /* FF3.6-15 */
+
+    background: -webkit-linear-gradient(-45deg, #007dc5 45%, #21bbaf 100%);
+    /* Chrome10-25,Safari5.1-6 */
+
+    background: linear-gradient(135deg, #007dc5 45%, #21bbaf 100%);
+    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#007dc5', endColorstr='#21bbaf', GradientType=1);
+    /* IE6-9 fallback on horizontal gradient */
+}
+
+// common use classes
+.basebg {
+    width: 100vw;
+    height: 100vh;
+    background-image: url('../../../img/bg.png');
+    background-size: cover;
+    background-position: center 160px;
+    background-repeat: no-repeat;
+
+    .top-nav {
+        position: absolute;
+        margin: 20px;
+        right: 0;
+        button {
+            padding: 10px;
+            font-size: 1em;
+            &:hover {
+                background: $blue;
+            }
+        }
+        a {
+            color: white;
+        }
+    }
+}
+
+.basebg.no-found {
+
+    .login-container {
+        height: 30%;
+    }
+
+    h3 {
+        color: white;
+    }
+
+    button {
+        background: $blue;
+        color:white;
+        padding: 10px 20px;
+        margin-top: 20px;
+        font-size: 16px;
+        &:hover {
+            background: $green;
+        }
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+.clear {
+    clear: both;
+}
+
+.link-blue {
+    color: $blue;
+}
+
+.link-red {
+    color: $red;
+}
+
+.pull-right {
+    float: right;
+}
+
+.pull-left {
+    float: left;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.width80 {
+    width: 80%;
+}
+
+.hide-mobile {
+    @media screen and (max-width: 768px) {
+        display: none !important;
+    }
+}
+
+.message-center {
+    position: relative;
+    background: $light-blue;
+    color: $blue;
+    padding: 10px;
+    text-align: center;
+    -webkit-animation: fadein .5s;
+    /* Safari, Chrome and Opera > 12.1 */
+    -moz-animation: fadein .5s;
+    /* Firefox < 16 */
+    -ms-animation: fadein .5s;
+    /* Internet Explorer */
+    -o-animation: fadein .5s;
+    /* Opera < 12.1 */
+    animation: fadein .5s;
+    p {
+        font-weight: bold;
+    }
+    .icon-remove {
+        color: white;
+        font-size: 18px;
+        position: absolute;
+        right: 20px;
+        top: 8px;
+        cursor: pointer;
+    }
+}
+
+//test=================
+.faceZ {
+    -webkit-transform-style: preserve-3d;
+    -webkit-animation: spin 5s infinite ease-out;
+}
+
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotateX(-20deg) rotateY(20deg);
+    }
+    100% {
+        -webkit-transform: rotateX(-20deg) rotateY(740deg);
+    }
+}
+
+.clear:before {
+    display: table;
+    content: " ";
+}
+
+.clear:after {
+    display: table;
+    content: " ";
+    clear: both;
+}
+
+// TODO: normalize input css
+input {
+    font-family: sans-serif; /* 1 */
+    font-size: 100%; /* 1 */
+    line-height: 1.15; /* 1 */
+    margin: 0; /* 2 */
+}
+
+/**
+* Show the overflow in IE.
+* 1. Show the overflow in Edge.
+*/
+input { /* 1 */
+    overflow: visible;
+}

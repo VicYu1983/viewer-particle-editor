@@ -1,0 +1,260 @@
+{
+  "guid": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmltYW5nbGUvaW5wdXQucnZ0",
+  "success": "100%",
+  "owner": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmltYW5nbGUvaW5wdXQucnZ0",
+  "startedAt": "Thu, 19 Oct 2023 13:15:38 GMT",
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmltYW5nbGUvaW5wdXQucnZ0",
+  "type": "design",
+  "progress": "complete",
+  "status": "success",
+  "hasThumbnail": "false",
+  "region": "US",
+  "children": [
+    {
+      "type": "folder",
+      "role": "viewable",
+      "status": "success",
+      "name": "input.nwc",
+      "hasThumbnail": "false",
+      "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmltYW5nbGUvaW5wdXQucnZ0",
+      "progress": "complete",
+      "guid": "576ae9c2-4729-467f-ac76-666957f1b050",
+      "properties": {},
+      "success": "100%",
+      "children": [
+        {
+          "type": "view",
+          "role": "3d",
+          "status": "success",
+          "name": "Default",
+          "progress": "complete",
+          "guid": "9fc3f1cf-def1-4300-9795-cbeb7d9db859",
+          "camera": [
+            14.112425804138184,
+            0.68656140565872192,
+            11.712465286254883,
+            2.8350467681884766,
+            15.153445243835449,
+            1.5966911315917969,
+            -0.34162530303001404,
+            0.34498575329780579,
+            0.874229371547699,
+            0.96202534437179565,
+            0.7853980968184211,
+            20.947526931762695,
+            0.0
+          ]
+        },
+        {
+          "type": "view",
+          "role": "3d",
+          "status": "success",
+          "name": "目前的視埠: 透視使用者",
+          "guid": "06124bd8-5590-4028-a6c6-21dbe4f8ef7c",
+          "camera": [
+            29.878273010253906,
+            -16.835689544677734,
+            31.402507781982422,
+            17.050582885742188,
+            -4.0080032348632813,
+            20.928745269775391,
+            -0.35355344414711,
+            0.35355329513549805,
+            0.866025447845459,
+            1.0,
+            0.7853980968184211,
+            20.947526931762695,
+            0.0
+          ]
+        },
+        {
+          "type": "view",
+          "role": "3d",
+          "status": "success",
+          "name": "skp_camera_Right",
+          "guid": "055c90c2-6fea-4827-8bd2-c6bca4ed5480",
+          "camera": [
+            0.0,
+            0.0,
+            0.025399982929229736,
+            0.0,
+            0.0,
+            -20.922126770019531,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.68626558708672025,
+            20.947526931762695,
+            0.0
+          ]
+        },
+        {
+          "type": "view",
+          "role": "3d",
+          "status": "success",
+          "name": "skp_camera_Left",
+          "guid": "a7efef09-d5af-4349-bd95-d53d433a5c92",
+          "camera": [
+            0.0,
+            0.0,
+            0.025399982929229736,
+            0.0,
+            0.0,
+            -20.922126770019531,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.68626558708672025,
+            20.947526931762695,
+            0.0
+          ]
+        },
+        {
+          "type": "view",
+          "role": "3d",
+          "status": "success",
+          "name": "skp_camera_Top",
+          "guid": "4ef5e3a3-48c1-44b7-8db7-4e414fba99fe",
+          "camera": [
+            0.0,
+            0.0,
+            0.025399982929229736,
+            0.0,
+            0.0,
+            -20.922126770019531,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.68626558708672025,
+            20.947526931762695,
+            0.0
+          ]
+        },
+        {
+          "type": "view",
+          "role": "3d",
+          "status": "success",
+          "name": "skp_camera_Perspective",
+          "guid": "a0866b2c-5735-4629-b894-7711966b8067",
+          "camera": [
+            0.0,
+            0.0,
+            0.025399982929229736,
+            0.0,
+            0.0,
+            -20.922126770019531,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.68626558708672025,
+            20.947526931762695,
+            0.0
+          ]
+        },
+        {
+          "type": "view",
+          "role": "3d",
+          "status": "success",
+          "name": "skp_camera_Last_Saved_SketchUp_View",
+          "guid": "a04801fa-8e4a-4b53-b37a-aa27f2f8a793",
+          "camera": [
+            -21.3115234375,
+            31.2705078125,
+            12.811798095703125,
+            -3.7937870025634766,
+            25.478786468505859,
+            2.892939567565918,
+            0.44957533478736877,
+            -0.14863884449005127,
+            0.88078856468200684,
+            1.0,
+            0.68626558708672025,
+            20.947526931762695,
+            0.0
+          ]
+        },
+        {
+          "type": "resource",
+          "role": "3d",
+          "mime": "application/autodesk-svf",
+          "urn": "urn:adsk.viewing:fs.file:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmltYW5nbGUvaW5wdXQucnZ0/3d.svf",
+          "progress": "graphics",
+          "guid": "b1775b9b-ebed-4793-a1bd-f21abae25449"
+        },
+        {
+          "type": "folder",
+          "status": "success",
+          "name": "视图",
+          "hasThumbnail": "false",
+          "progress": "complete",
+          "guid": "c2653e4c-feee-4b84-a389-dcf89f0e66e6",
+          "success": "100%",
+          "children": [
+            {
+              "type": "folder",
+              "status": "success",
+              "name": "三维视图",
+              "hasThumbnail": "false",
+              "progress": "complete",
+              "guid": "7cea6547-b46b-4eaf-ad0f-2a2d7bae1b05",
+              "success": "100%",
+              "children": [
+                {
+                  "type": "geometry",
+                  "role": "3d",
+                  "status": "success",
+                  "name": "3d",
+                  "hasThumbnail": "false",
+                  "progress": "complete",
+                  "guid": "d2045ce1-3af2-4b06-b812-21e6a4f2a2d0",
+                  "success": "100%",
+                  "children": [
+                    {
+                      "type": "view",
+                      "role": "3d",
+                      "status": "success",
+                      "name": "Default",
+                      "progress": "complete",
+                      "guid": "9fc3f1cf-def1-4300-9795-cbeb7d9db859",
+                      "camera": [
+                        14.112425804138184,
+                        0.68656140565872192,
+                        11.712465286254883,
+                        2.8350467681884766,
+                        15.153445243835449,
+                        1.5966911315917969,
+                        -0.34162530303001404,
+                        0.34498575329780579,
+                        0.874229371547699,
+                        0.96202534437179565,
+                        0.7853980968184211,
+                        20.947526931762695,
+                        0.0
+                      ]
+                    },
+                    {
+                      "type": "resource",
+                      "role": "3d",
+                      "mime": "application/autodesk-svf",
+                      "urn": "urn:adsk.viewing:fs.file:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6YmltYW5nbGUvaW5wdXQucnZ0/3d.svf",
+                      "progress": "graphics",
+                      "guid": "b1775b9b-ebed-4793-a1bd-f21abae25449",
+                      "size": 14980333
+                    }
+                  ],
+                  "size": 14980333,
+                  "viewableID": "9fc3f1cf-def1-4300-9795-cbeb7d9db859"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "version": "2.0"
+    }
+  ]
+}

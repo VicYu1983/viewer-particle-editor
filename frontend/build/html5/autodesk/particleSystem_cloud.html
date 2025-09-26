@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
+    <script src='http://joeiddon.github.io/perlin/perlin.js'></script>
+    <script src="../../../lib/viewer3D_extensions.js"></script>
+    <script src="../../../js/CloudShader.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+
+
+    <script>
+
+        // console.log(perlin.get(0,0));
+
+        const Particle = threejs.particle.system.Particle;
+        const Emitter = threejs.particle.system.Emitter;
+        const ParticleSystem = threejs.particle.system.ParticleSystem;
+
+        let config = {
+            extensions: [],
+            disabledExtensions: {
+                measure: false,
+                section: false,
+            },
+
+            memory: {
+                limit: 32 * 1024 //32 GB
+            }
+        };
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        viewer = new Autodesk.Viewing.Viewer3D(viewerDiv);
+        // viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv, config);
+
+        const options = {
+            // docid: "./assets/plane_uv_gltf.glb",
+            // docid: "./assets/plane_uv_gltf2.glb",
+            // docid: "./assets/sample2/3d.svf",
+            env: 'Local',
+            offline: 'true',
+            useADP: false
+        };
+
+        Autodesk.Viewing.Initializer(options, function () {
+            viewer.start();
+            // onModelLoaded();
+            viewer.loadModel("../../../assets/sample10/3d.svf", undefined, onLoadSuccess, onLoadError);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+        viewer.setQualityLevel(false, false);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+        const ps = ParticleSystem.getInstance();
+
+        let loadCount = 0;
+        let currentViewpoint = undefined;
+        function onModelLoaded(e) {
+            console.log('等模型讀取完畢換材質才有作用');
+
+
+            // loadCount++;
+            // 用overlay scene的話，材質的透明度顯示比較正常
+            const overlayScene = viewer.impl.createOverlayScene('myOverlayScene');
+
+            const cloudShader = new vic.shaders.CloudShader();
+
+            const cloudParticle = new Particle(threejs.shaders.ShaderTool.getSpriteMesh(undefined, cloudShader, 1, 1, 1, true));
+            cloudParticle.randomPosition.x = 10;
+            cloudParticle.randomPosition.y = 5;
+            cloudParticle.randomPosition.z = 5;
+            cloudParticle.size = 10;
+            cloudParticle.sizeRandom = 7;
+            cloudParticle.addForce(new threejs.particle.system.forces.WindForce(.001, new THREE.Vector3(1, 0, 0), .0005, 1));
+            cloudParticle.deadAge = 99999;
+
+            ps.setViewer(viewer);
+            ps.setScene(overlayScene.scene);
+
+            const cloudEmitter = new Emitter();
+            cloudEmitter.randomPosition.x = 100;
+            cloudEmitter.randomPosition.y = 100;
+            cloudEmitter.randomPosition.z = 10;
+            cloudEmitter.spray.force = 0;
+            cloudEmitter.spray.rate = 50;
+            cloudEmitter.deadAge = .5;
+            cloudEmitter.setParticle(cloudParticle);
+
+            const cloudEmitterEmitter = new Emitter();
+            cloudEmitterEmitter.setPosition(0, 0, 30);
+            cloudEmitterEmitter.spray.force = 0;
+            cloudEmitterEmitter.spray.rate = 50;
+            cloudEmitterEmitter.deadAge = .5;
+            cloudEmitterEmitter.setParticle(cloudEmitter);
+
+            ps.addParticle(cloudEmitterEmitter);
+
+
+
+
+
+            viewer.setBackgroundColor(300, 300, 300, 0, 0, 0);
+
+            window.requestAnimationFrame(runAnimation)
+        }
+
+
+        // const perfectFrameTime = 1000 / 60;
+        var deltaTime = 0;
+        var lastTimestamp = 0;
+        var needUpdate = true;
+        // var wind = new THREE.Vector3(1, 0, 0);
+
+        function runAnimation(timestamp) {
+            if (needUpdate) window.requestAnimationFrame(runAnimation)
+            // window.requestAnimationFrame(runAnimation)
+
+            deltaTime = (timestamp - lastTimestamp);
+            lastTimestamp = timestamp;
+
+            // console.log(1000/deltaTime);
+
+            if (ps) ps.update(deltaTime / 1000);
+
+            // wind.x = Math.sin(timestamp * .001) * 0.5 + .5;
+            // wind.z = -.4;
+
+            // 如果沒有下這行的話，只有在畫面的視角有變動時，才會更新畫面
+            viewer.impl.sceneUpdated(true)
+        }
+
+        window.addEventListener('blur', (e) => {
+            needUpdate = false;
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,137 @@
+{
+  "guid": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6b25ld29yay9pbnB1dC5ydnQ==",
+  "success": "100%",
+  "owner": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6b25ld29yay9pbnB1dC5ydnQ==",
+  "startedAt": "Thu, 15 Apr 2021 10:43:54 GMT",
+  "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6b25ld29yay9pbnB1dC5ydnQ==",
+  "type": "design",
+  "progress": "complete",
+  "status": "success",
+  "hasThumbnail": "false",
+  "region": "US",
+  "children": [
+    {
+      "type": "folder",
+      "role": "viewable",
+      "status": "success",
+      "name": "input.nwc",
+      "hasThumbnail": "false",
+      "urn": "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6b25ld29yay9pbnB1dC5ydnQ==",
+      "progress": "complete",
+      "guid": "fd3047c0-7786-4804-8f32-850d4800cf26",
+      "properties": {},
+      "success": "100%",
+      "children": [
+        {
+          "type": "view",
+          "role": "3d",
+          "status": "success",
+          "name": "Default",
+          "progress": "complete",
+          "guid": "bc18fa80-8306-4040-978d-90e6f5433b99",
+          "camera": [
+            3.6985299587249756,
+            -0.95949137210845947,
+            -4.91977596282959,
+            0.33533477783203125,
+            0.82881414890289307,
+            -1.4941480159759521,
+            0.59041363000869751,
+            -0.31393954157829285,
+            0.74354135990142822,
+            1.4600484371185303,
+            0.7853980302393937,
+            5.122894287109375,
+            0.0
+          ]
+        },
+        {
+          "type": "resource",
+          "role": "3d",
+          "mime": "application/autodesk-svf",
+          "urn": "urn:adsk.viewing:fs.file:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6b25ld29yay9pbnB1dC5ydnQ==/3d.svf",
+          "progress": "graphics",
+          "guid": "9ecac2c9-e621-4d37-aa2a-5ab2b6d74d0f"
+        },
+        {
+          "type": "resource",
+          "role": "Autodesk.CloudPlatform.PropertyDatabase",
+          "status": "success",
+          "mime": "application/autodesk-db",
+          "urn": "urn:adsk.viewing:fs.file:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6b25ld29yay9pbnB1dC5ydnQ==/model.sdb",
+          "guid": "98504d41-4ca5-4378-b7d5-06065a6ca485",
+          "size": 45056
+        },
+        {
+          "type": "folder",
+          "status": "success",
+          "name": "视图",
+          "hasThumbnail": "false",
+          "progress": "complete",
+          "guid": "f6f9a62a-02e7-4e30-a211-fc2a15948b62",
+          "success": "100%",
+          "children": [
+            {
+              "type": "folder",
+              "status": "success",
+              "name": "三维视图",
+              "hasThumbnail": "false",
+              "progress": "complete",
+              "guid": "5e983be4-76b2-4dad-a495-9da7b8f21fc0",
+              "success": "100%",
+              "children": [
+                {
+                  "type": "geometry",
+                  "role": "3d",
+                  "status": "success",
+                  "name": "3d",
+                  "hasThumbnail": "false",
+                  "progress": "complete",
+                  "guid": "28e9054d-02fa-49c8-9fa6-75018b4faccf",
+                  "success": "100%",
+                  "children": [
+                    {
+                      "type": "view",
+                      "role": "3d",
+                      "status": "success",
+                      "name": "Default",
+                      "progress": "complete",
+                      "guid": "bc18fa80-8306-4040-978d-90e6f5433b99",
+                      "camera": [
+                        3.6985299587249756,
+                        -0.95949137210845947,
+                        -4.91977596282959,
+                        0.33533477783203125,
+                        0.82881414890289307,
+                        -1.4941480159759521,
+                        0.59041363000869751,
+                        -0.31393954157829285,
+                        0.74354135990142822,
+                        1.4600484371185303,
+                        0.7853980302393937,
+                        5.122894287109375,
+                        0.0
+                      ]
+                    },
+                    {
+                      "type": "resource",
+                      "role": "3d",
+                      "mime": "application/autodesk-svf",
+                      "urn": "urn:adsk.viewing:fs.file:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6b25ld29yay9pbnB1dC5ydnQ==/3d.svf",
+                      "progress": "graphics",
+                      "guid": "9ecac2c9-e621-4d37-aa2a-5ab2b6d74d0f",
+                      "size": 1293293
+                    }
+                  ],
+                  "size": 1293293,
+                  "viewableID": "bc18fa80-8306-4040-978d-90e6f5433b99"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "version": "2.0"
+    }
+  ]
+}

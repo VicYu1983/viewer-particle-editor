@@ -1,0 +1,6 @@
+<hbox width="100%">
+    <label id="txt_title" width="60" text="生命" verticalAlign="center" />
+    <number-stepper id="num_min" pos="30" />
+    <slider id="sdr_value" width="100%" pos="0" minorTicks="25" majorTicks="50" />
+    <number-stepper id="num_max" pos="30" />
+</hbox>

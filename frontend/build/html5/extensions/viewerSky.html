@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="../../../Autodesk-Forge-Viewer_v7.52/style.css">
+    <script src="../../../Autodesk-Forge-Viewer_v7.52/viewer3D.js"></script>
+    <script src="../../../Autodesk-Forge-Viewer_v7.52/extensions/Sky/Sky.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+    <script>
+
+
+        class Sky extends THREE.Mesh {
+
+            constructor(viewer) {
+
+                const shader = Sky.SkyShader;
+
+                const material = new THREE.ShaderMaterial({
+                    name: shader.name,
+                    uniforms: THREE.UniformsUtils.clone(shader.uniforms),
+                    vertexShader: shader.vertexShader,
+                    fragmentShader: shader.fragmentShader,
+                    side: THREE.BackSide,
+                    depthWrite: false
+                });
+                material.supportsMrtNormals = true;
+
+                // var material = new THREE.MeshPhongMaterial({
+                //     color: 0x00ff00,     // 材质颜色
+                //     specular: 0x555555, // 镜面高光颜色
+                //     shininess: 30       // 高光强度
+                // });
+
+                viewer.impl.matman().addMaterial('skyMaterial', material, true);
+
+                super(new THREE.BoxGeometry(1, 1, 1), material);
+
+                this.isSky = true;
+
+            }
+
+        }
+
+        Sky.SkyShader = {
+
+            name: 'SkyShader',
+
+            uniforms: {
+                'turbidity': { type: "f", value: 2 },
+                'rayleigh': { type: "f", value: 1 },
+                'mieCoefficient': { type: "f", value: 0.005 },
+                'mieDirectionalG': { type: "f", value: 0.8 },
+                'sunPosition': { type: "v3", value: new THREE.Vector3() },
+                'upDir': { type: "v3", value: new THREE.Vector3(0, 0, 1) }
+            },
+
+            vertexShader: /* glsl */`
+
+            uniform vec3 sunPosition;
+		uniform float rayleigh;
+		uniform float turbidity;
+		uniform float mieCoefficient;
+		uniform vec3 upDir;
+
+		varying vec3 vWorldPosition;
+		varying vec3 vSunDirection;
+        varying vec3 vUpDir;
+		varying float vSunfade;
+		varying vec3 vBetaR;
+		varying vec3 vBetaM;
+		varying float vSunE;
+
+		// constants for atmospheric scattering
+		const float e = 2.71828182845904523536028747135266249775724709369995957;
+		const float pi = 3.141592653589793238462643383279502884197169;
+
+		// wavelength of used primaries, according to preetham
+		const vec3 lambda = vec3( 680E-9, 550E-9, 450E-9 );
+		// this pre-calcuation replaces older TotalRayleigh(vec3 lambda) function:
+		// (8.0 * pow(pi, 3.0) * pow(pow(n, 2.0) - 1.0, 2.0) * (6.0 + 3.0 * pn)) / (3.0 * N * pow(lambda, vec3(4.0)) * (6.0 - 7.0 * pn))
+		const vec3 totalRayleigh = vec3( 5.804542996261093E-6, 1.3562911419845635E-5, 3.0265902468824876E-5 );
+
+		// mie stuff
+		// K coefficient for the primaries
+		const float v = 4.0;
+		const vec3 K = vec3( 0.686, 0.678, 0.666 );
+		// MieConst = pi * pow( ( 2.0 * pi ) / lambda, vec3( v - 2.0 ) ) * K
+		const vec3 MieConst = vec3( 1.8399918514433978E14, 2.7798023919660528E14, 4.0790479543861094E14 );
+
+		// earth shadow hack
+		// cutoffAngle = pi / 1.95;
+		const float cutoffAngle = 1.6110731556870734;
+		const float steepness = 1.5;
+		const float EE = 1000.0;
+
+		float sunIntensity( float zenithAngleCos ) {
+			zenithAngleCos = clamp( zenithAngleCos, -1.0, 1.0 );
+			return EE * max( 0.0, 1.0 - pow( e, -( ( cutoffAngle - acos( zenithAngleCos ) ) / steepness ) ) );
+		}
+
+		vec3 totalMie( float T ) {
+			float c = ( 0.2 * T ) * 10E-18;
+			return 0.434 * c * MieConst;
+		}
+
+		void main() {
+
+			vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+			vWorldPosition = worldPosition.xyz;
+
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+			gl_Position.z = gl_Position.w; // set z to camera.far
+
+            vUpDir = upDir;
+			vSunDirection = normalize( sunPosition );
+
+			vSunE = sunIntensity( dot( vSunDirection, upDir ) );
+
+			vSunfade = 1.0 - clamp( 1.0 - exp( ( sunPosition.y / 450000.0 ) ), 0.0, 1.0 );
+
+			float rayleighCoefficient = rayleigh - ( 1.0 * ( 1.0 - vSunfade ) );
+
+			// extinction (absorbtion + out scattering)
+			// rayleigh coefficients
+			vBetaR = totalRayleigh * rayleighCoefficient;
+
+			// mie coefficients
+			vBetaM = totalMie( turbidity ) * mieCoefficient;
+
+		}
+            `,
+
+            fragmentShader: /* glsl */`
+
+        precision mediump float;
+
+        varying vec3 vWorldPosition;
+		varying vec3 vSunDirection;
+        varying vec3 vUpDir;
+		varying float vSunfade;
+		varying vec3 vBetaR;
+		varying vec3 vBetaM;
+		varying float vSunE;
+
+		uniform float mieDirectionalG;
+
+		// constants for atmospheric scattering
+		const float pi = 3.141592653589793238462643383279502884197169;
+
+		const float n = 1.0003; // refractive index of air
+		const float N = 2.545E25; // number of molecules per unit volume for air at 288.15K and 1013mb (sea level -45 celsius)
+
+		// optical length at zenith for molecules
+		const float rayleighZenithLength = 8.4E3;
+		const float mieZenithLength = 1.25E3;
+		// 66 arc seconds -> degrees, and the cosine of that
+		const float sunAngularDiameterCos = 0.999956676946448443553574619906976478926848692873900859324;
+
+		// 3.0 / ( 16.0 * pi )
+		const float THREE_OVER_SIXTEENPI = 0.05968310365946075;
+		// 1.0 / ( 4.0 * pi )
+		const float ONE_OVER_FOURPI = 0.07957747154594767;
+
+		float rayleighPhase( float cosTheta ) {
+			return THREE_OVER_SIXTEENPI * ( 1.0 + pow( cosTheta, 2.0 ) );
+		}
+
+		float hgPhase( float cosTheta, float g ) {
+			float g2 = pow( g, 2.0 );
+			float inverse = 1.0 / pow( 1.0 - 2.0 * g * cosTheta + g2, 1.5 );
+			return ONE_OVER_FOURPI * ( ( 1.0 - g2 ) * inverse );
+		}
+        
+        #ifdef _LMVWEBGL2_
+            #if defined(MRT_NORMALS)
+            layout(location = 1) out vec4 outNormal;
+            #if defined(MRT_ID_BUFFER)
+                layout(location = 2) out vec4 outId;
+                #if defined(MODEL_COLOR)
+                layout(location = 3) out vec4 outModelId;
+                #endif
+            #endif
+            #elif defined(MRT_ID_BUFFER)
+            layout(location = 1) out vec4 outId;
+            #if defined(MODEL_COLOR)
+                layout(location = 2) out vec4 outModelId;
+            #endif
+            #endif
+        #else
+            #define gl_FragColor gl_FragData[0]
+            #if defined(MRT_NORMALS)
+            #define outNormal gl_FragData[1]
+            #if defined(MRT_ID_BUFFER)
+                #define outId gl_FragData[2]
+                #if defined(MODEL_COLOR)
+                #define outModelId gl_FragData[3]
+                #endif
+            #endif
+            #elif defined(MRT_ID_BUFFER)
+            #define outId gl_FragData[1]
+            #if defined(MODEL_COLOR)
+                #define outModelId gl_FragData[2]
+            #endif
+            #endif
+        #endif
+        
+
+        vec3 RRTAndODTFit( vec3 v ) {
+            vec3 a = v * ( v + 0.0245786 ) - 0.000090537;
+            vec3 b = v * ( 0.983729 * v + 0.4329510 ) + 0.238081;
+            return a / b;
+        }
+
+        vec3 ACESFilmicToneMapping( vec3 color ) {
+            float toneMappingExposure = 0.5;
+            const mat3 ACESInputMat = mat3(
+                vec3( 0.59719, 0.07600, 0.02840 ),vec3( 0.35458, 0.90834, 0.13383 ),
+                vec3( 0.04823, 0.01566, 0.83777 )
+            );
+            const mat3 ACESOutputMat = mat3(
+                vec3(  1.60475, -0.10208, -0.00327 ), vec3( -0.53108,  1.10813, -0.07276 ),
+                vec3( -0.07367, -0.00605,  1.07602 )
+            );
+            color *= toneMappingExposure / 0.6;
+            color = ACESInputMat * color;
+            color = RRTAndODTFit( color );
+            color = ACESOutputMat * color;
+            return clamp( color, 0.0, 1.0 );
+        }
+
+
+
+
+
+
+        void main() {
+
+            vec3 direction = normalize( vWorldPosition - cameraPosition );
+
+			// optical length
+			// cutoff angle at 90 to avoid singularity in next formula.
+            
+			float zenithAngle = acos( max( 0.0, dot( vUpDir, direction )));
+			float inverse = 1.0 / ( cos( zenithAngle ) + 0.15 * pow( 93.885 - ( ( zenithAngle * 180.0 ) / pi ), -1.253 ) );
+			float sR = rayleighZenithLength * inverse;
+			float sM = mieZenithLength * inverse;
+
+			// combined extinction factor
+			vec3 Fex = exp( -( vBetaR * sR + vBetaM * sM ) );
+
+			// in scattering
+			float cosTheta = dot( direction, vSunDirection );
+
+			float rPhase = rayleighPhase( cosTheta * 0.5 + 0.5 );
+			vec3 betaRTheta = vBetaR * rPhase;
+
+			float mPhase = hgPhase( cosTheta, mieDirectionalG );
+			vec3 betaMTheta = vBetaM * mPhase;
+
+			vec3 Lin = pow( vSunE * ( ( betaRTheta + betaMTheta ) / ( vBetaR + vBetaM ) ) * ( 1.0 - Fex ), vec3( 1.5 ) );
+			Lin *= mix( vec3( 1.0 ), pow( vSunE * ( ( betaRTheta + betaMTheta ) / ( vBetaR + vBetaM ) ) * Fex, vec3( 1.0 / 2.0 ) ), clamp( pow( 1.0 - dot( vUpDir, vSunDirection ), 5.0 ), 0.0, 1.0 ) );
+
+			// nightsky
+			float theta = acos( direction.y ); // elevation --> y-axis, [-pi/2, pi/2]
+			float phi = atan( direction.z, direction.x ); // azimuth --> x-axis [-pi/2, pi/2]
+			vec2 uv = vec2( phi, theta ) / vec2( 2.0 * pi, pi ) + vec2( 0.5, 0.0 );
+			vec3 L0 = vec3( 0.1 ) * Fex;
+
+			// composition + solar disc
+			float sundisk = smoothstep( sunAngularDiameterCos, sunAngularDiameterCos + 0.00002, cosTheta );
+			L0 += ( vSunE * 19000.0 * Fex ) * sundisk;
+
+			vec3 texColor = ( Lin + L0 ) * 0.04 + vec3( 0.0, 0.0003, 0.00075 );
+
+			vec3 retColor = pow( texColor, vec3( 1.0 / ( 1.2 + ( 1.2 * vSunfade ) ) ) );
+
+			gl_FragColor = vec4( retColor, 1.0 );
+
+            // toneMapping;
+            gl_FragColor.rgb = ACESFilmicToneMapping( gl_FragColor.rgb );
+
+
+            #ifdef MRT_ID_BUFFER
+            outId = vec4(0.0);
+            #endif
+            #ifdef MODEL_COLOR
+            outModelId = vec4(0.0);
+            #endif
+            #ifdef MRT_NORMALS
+            outNormal = vec4(0.0);
+            #endif
+        }
+            
+        `
+
+        };
+
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        const viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv);
+
+        const options = {
+            docid: "../../../assets/room/3d.svf",
+            env: 'Local',
+            offline: 'false',
+            useADP: false
+        };
+
+
+        Autodesk.Viewing.Initializer(options, function () {
+
+            viewer.start();
+            viewer.loadModel(options.docid, undefined, onLoadSuccess, onLoadError);
+
+
+            const sky = new Sky(viewer);
+            console.log(sky);
+
+            sky.scale.x = 100;
+            sky.scale.y = 100;
+            sky.scale.z = 100;
+
+            viewer.impl.scene.add(sky);
+
+            sun = new THREE.Vector3(1000, 100, 100);
+
+            const uniforms = sky.material.uniforms;
+            uniforms['turbidity'].value = 10;
+            uniforms['rayleigh'].value = 3;
+            uniforms['mieCoefficient'].value = 0.005;
+            uniforms['mieDirectionalG'].value = 0.7;
+
+            uniforms['sunPosition'].value.copy(sun);
+
+            viewer.impl.sceneUpdated(true);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+        function onModelLoaded() {
+            console.log('等模型讀取完畢換材質才有作用');
+        }
+
+    </script>
+</body>
+
+</html>

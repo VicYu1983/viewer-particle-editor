@@ -1,0 +1,127 @@
+.bim-project {
+	height: 100%;
+	width: 100%;
+	padding: 30px;
+	overflow-y: scroll;
+}
+
+.bim-project .back {
+	background: #2f64c7;
+	padding: 8px 15px;
+	vertical-align: top;
+	margin-top: 20px;
+	cursor: pointer;
+	border-radius: 16px;
+	color: white;
+}
+
+.bim-project .back:hover {
+	background: #4BBCD1;
+}
+
+.bim-card {
+	min-width: 200px;
+	min-height: 200px;
+	display: inline-block;
+	padding: 15px;
+	margin: 10px;
+	border-radius: 3px;
+	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2), 0 -1px 1px rgba(0, 0, 0, 0.2), 1px 0 1px rgba(0, 0, 0, 0.2), -1px 0 1px rgba(0, 0, 0, 0.2);
+	background: white;
+}
+
+.bim-card .empty {
+	width: 170px;
+	height: 170px;
+	background: #cccdce;
+	text-align: center;
+	font-size: 90px;
+	color: white;
+	padding: 35px;
+}
+
+.bim-card hr {
+	border-top: #cccdce;
+}
+
+.bim-card .info {
+	margin-top: 15px;
+	width: 170px;
+}
+
+.bim-card .small {
+	color: #a8b3b3;
+	word-break: break-word;
+	line-height: initial;
+}
+
+.bim-card .left {
+	float: right;
+}
+
+.bim-card .fill {
+	width: 170px;
+	height: 170px;
+	background-size: contain;
+	cursor: pointer;
+}
+
+.bim-card .icon-mark {
+	color: #cccdce;
+	cursor: pointer;
+}
+
+.bim-card .icon-mark:hover {
+	color: #F47A6C;
+}
+
+.bim-card .image-caption {
+	position: relative;
+	left: 0;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	padding: 5px 10px;
+	margin-bottom: 10px;
+	width: 60%;
+}
+
+.thumbnail {
+	width: 100px;
+	height: 100px;
+	border: 1px solid #cccdce;
+	display: inline-block;
+	position: relative;
+	margin: 4px 8px 20px 0px;
+	float: left;
+}
+
+.thumbnail img {
+	width: 100%;
+	height: 100%;
+}
+
+.thumbnail input[type="checkbox"] {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+}
+
+.thumbnail span {
+	position: absolute;
+	left: 0;
+	top: 0;
+	background: #cccdce;
+	color: white;
+	padding: 5px;
+}
+
+.select-bims {
+	height: calc(100% - 180px);
+	overflow: auto;
+}
+
+.ellipsis {
+	overflow:hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	}

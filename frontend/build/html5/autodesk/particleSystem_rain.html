@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
+    <script src='http://joeiddon.github.io/perlin/perlin.js'></script>
+    <script src="../../../lib/viewer3D_extensions.js"></script>
+    <script src="../../../js/RainShader.js"></script>
+    <script src="../../../js/RainSparkShader.js"></script>
+    <script src="../../../js/RainRippleShader.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+
+
+    <script>
+
+        // console.log(perlin.get(0,0));
+
+        const Particle = threejs.particle.system.Particle;
+        const Emitter = threejs.particle.system.Emitter;
+        const ParticleSystem = threejs.particle.system.ParticleSystem;
+
+        let config = {
+            extensions: [],
+            disabledExtensions: {
+                measure: false,
+                section: false,
+            },
+
+            memory: {
+                limit: 32 * 1024 //32 GB
+            }
+        };
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        viewer = new Autodesk.Viewing.Viewer3D(viewerDiv);
+        // viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv, config);
+
+        const options = {
+            // docid: "./assets/plane_uv_gltf.glb",
+            // docid: "./assets/plane_uv_gltf2.glb",
+            // docid: "./assets/sample2/3d.svf",
+            env: 'Local',
+            offline: 'true',
+            useADP: false
+        };
+
+        Autodesk.Viewing.Initializer(options, function () {
+            viewer.start();
+            // onModelLoaded();
+            viewer.loadModel("../../../assets/sample10/3d.svf", undefined, onLoadSuccess, onLoadError);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+        viewer.setQualityLevel(false, false);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+
+            viewer.loadModel("../../../assets/rain.glb", undefined, undefined, onLoadError);
+
+            // console.log("onLoadSuccess");
+            // console.log(viewer.impl.model);
+            // console.log(viewer.impl.model.loader.glTFUrn);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+
+        // var billboardUniform = vic.viewer.shader.getSpriteUniform();
+        // billboardUniform.usingTex.value = 1;
+
+        // var loader = new THREE.TextureLoader();
+        // loader.load('./assets/t1.png', function (t) {
+        //     t.minFilter = THREE.LinearMipMapLinearFilter;
+        //     t.magFilter = THREE.LinearFilter;
+        //     billboardUniform.colorTex.value = t;
+        // });
+
+        // const p = new Particle();
+
+        const ps = ParticleSystem.getInstance();
+
+        // function startToEffect() {
+        //     console.log("startToEffect=====");
+        //     console.log(mainModel);
+        //     console.log(rainModel);
+
+        //     const globalScene = new THREE.Scene();
+
+        //     const fragIds = Object.keys(rainModel.getData().fragments.fragId2dbId);
+        //     const fragProxy = rainViewer.impl.getFragmentProxy(rainModel, fragIds[0]);
+
+        //     const renderProxy = rainViewer.impl.getRenderProxy(rainModel, fragIds[0]);
+        //     console.log(renderProxy);
+
+        //     // renderProxy.position.y = 5;
+
+        //     const cloneRain = renderProxy.clone();
+        //     cloneRain.position.z = 5;
+        //     mainViewer.impl.scene.add(cloneRain);
+
+
+        //     // test move
+        //     fragProxy.getAnimTransform();
+        //     fragProxy.position.z = 5;
+        //     fragProxy.updateAnimTransform();
+        // }
+
+
+        let loadCount = 0;
+        let currentViewpoint = undefined;
+        // let mainViewer;
+        // let rainViewer;
+        // let rainModel;
+        // let mainModel;
+        function onModelLoaded(e) {
+            console.log('等模型讀取完畢換材質才有作用');
+
+
+            // loadCount++;
+
+            let currentModel = e.model;
+            let targetName;
+            if (e.model.loader.svfUrn) {
+                targetName = e.model.loader.svfUrn;
+            }
+            if (e.model.loader.glTFUrn) {
+                targetName = e.model.loader.glTFUrn;
+            }
+
+            switch (targetName) {
+                case "../../../assets/rain.glb":
+
+
+                    // 用overlay scene的話，材質的透明度顯示比較正常
+                    const overlayScene = viewer.impl.createOverlayScene('myOverlayScene');
+
+                    const fragIds = Object.keys(currentModel.getData().fragments.fragId2dbId);
+                    const fragProxy = viewer.impl.getFragmentProxy(currentModel, fragIds[0]);
+
+
+
+                    // const globalScene = new THREE.Scene();
+                    // viewer.impl.scene.add(globalScene);
+
+
+                    // test move
+                    // fragProxy.getAnimTransform();
+
+                    // fragProxy.position.z = 6;
+
+                    // const rotationAngle = THREE.Math.degToRad(90); // 将角度转换为弧度
+                    // const rotationMatrix = new THREE.Matrix4();
+                    // rotationMatrix.makeRotationY(rotationAngle);
+
+                    // fragProxy.quaternion.setFromRotationMatrix3(rotationMatrix);
+
+                    // fragProxy.updateAnimTransform();
+
+                    const rainShader = new vic.shaders.RainShader();
+
+
+                    // const rainMaterial = vic.viewer.shader.getMaterial("rainMaterial", undefined, rainShader, und, true);
+                    // const rainMaterial = vic.viewer.shader.getMaterial("rainMaterial", undefined, rainShader, THREE.AdditiveBlending, true, false);
+                    const rainMaterial = threejs.shaders.ShaderTool.getMaterial(undefined, rainShader, THREE.AdditiveBlending, true, false);
+                    viewer.impl.matman().addMaterial("rainMaterial", rainMaterial, true);
+                    // const rainMaterial = vic.viewer.shader.getMaterial("rainMaterial", undefined, rainShader, 1, true, false);
+
+                    fragProxy.setMaterial(rainMaterial);
+
+
+                    // test clone ================
+                    // const originalMesh = viewer.impl.getRenderProxy(currentModel, fragIds[0]);
+                    // const cloneRain = originalMesh.clone();
+                    // // cloneRain.position.z = 8;
+                    // // cloneRain.rotation.y = 3.14 * .5;
+                    // overlayScene.scene.add(cloneRain);
+
+
+                    ps.setViewer(viewer);
+                    ps.setScene(overlayScene.scene);
+
+                    // const pool = new vic.viewer.particleSystem.ParticlePool();
+
+
+                    const mesh = viewer.impl.getRenderProxy(currentModel, fragIds[0]);
+                    // const mesh = vic.viewer.shader.getSpriteMesh();
+                    const p = new Particle(mesh, new threejs.particle.system.ParticlePool());
+                    // p.rotation.y = 3.14 * .5;
+                    // p.setRotation(0, 3.14 * .5, 0);
+                    p.randomPosition.x = 150;
+                    p.randomPosition.y = 150;
+                    p.randomPosition.z = 0;
+                    p.enabledRotateAlongSpeed = true;
+                    p.deadAge = 1.0;
+
+                    // gravity
+                    p.addForce(new threejs.particle.system.forces.WindForce(4, new THREE.Vector3(1, 0, -4), 3, .5));
+
+                    const e = new Emitter();
+                    e.setPosition(0, 0, 100);
+                    e.setParticle(p);
+
+                    // e.spray.verticalAngle = Math.PI * .5;
+                    // e.spray.horizonRandom = Math.PI * .4;
+                    // e.spray.verticalRandom = Math.PI * .5;
+                    e.spray.force = 0.0;
+
+                    e.spray.rate = 200;
+                    e.deadAge = 1000;
+
+
+                    ps.addParticle(e);
+
+
+
+                    const rippleMesh = threejs.shaders.ShaderTool.getSpriteMesh(new threejs.shaders.ParticleSpriteShader().getUniforms());
+                    rippleUniform = rippleMesh.material.uniforms;
+                    viewer.impl.matman().addMaterial("rippleMesh", rippleMesh, true);
+
+                    const rainSparkShader = new vic.shaders.RainSparkShader();
+
+                    const sparkParticle = new Particle(threejs.shaders.ShaderTool.getSpriteMesh(undefined, rainSparkShader), new threejs.particle.system.ParticlePool());
+                    viewer.impl.matman().addMaterial("sparkParticle", sparkParticle.proxy.material, true);
+
+                    // const sparkParticle = new Particle(threejs.shaders.ShaderTool.getSpriteMesh(undefined, rainSparkShader));
+
+                    sparkParticle.addForce(new threejs.particle.system.forces.WindForce(1.4, new THREE.Vector3(0, 0, -1), 0, 0))
+                    sparkParticle.deadAge = .3;
+                    sparkParticle.size = .15;
+                    sparkParticle.sizeRandom = .02;
+                    sparkParticle.sizeIn = 0.02;
+                    sparkParticle.sizeOut = 0.02;
+                    // sparkParticle.setScale(.1,.1,.1);
+
+                    // sparkParticle.enabledRotateAlongSpeed = true;
+                    // ps.addParticle(sparkParticle);
+
+
+                    const rainRippleShader = new vic.shaders.RainRippleShader();
+                    // const rippleParticle = new Particle(threejs.shaders.ShaderTool.getSpriteMesh(rippleUniform, rainRippleShader), new threejs.particle.system.ParticlePool());
+                    // viewer.impl.matman().addMaterial("rippleParticle", rippleParticle.proxy.material, true);
+
+                    const sparkEmitter = new Emitter(threejs.shaders.ShaderTool.getSpriteMesh(rippleUniform, rainRippleShader), new threejs.particle.system.ParticlePool());
+                    viewer.impl.matman().addMaterial("sparkEmitter", sparkEmitter.proxy.material, true);
+
+                    // const rippleParticle = new Emitter();
+                    sparkEmitter.setParticle(sparkParticle);
+                    sparkEmitter.setScale(4, 4, 3);
+                    // rippleParticle.setPosition(0, -100, 0);
+                    // sparkParticle.addForce(new threejs.particle.system.forces.WindForce(1, new THREE.Vector3(1, 0, 0), 0, 0))
+                    sparkEmitter.randomPosition.x = 200;
+                    sparkEmitter.randomPosition.y = 200;
+                    sparkEmitter.randomPosition.z = 0;
+                    sparkEmitter.spray.verticalAngle = 3.14 * .5;
+                    sparkEmitter.spray.verticalRandom = .3;
+                    sparkEmitter.spray.horizonRandom = .3;
+                    sparkEmitter.spray.force = 15.0;
+                    sparkEmitter.spray.forceRandom = 4;
+                    sparkEmitter.spray.rate = 20;
+                    sparkEmitter.deadAge = .3;
+                    // ps.addParticle(sparkEmitter);
+
+                    const sparkEmitterEmitter = new Emitter();
+                    sparkEmitterEmitter.setParticle(sparkEmitter);
+                    sparkEmitterEmitter.setPosition(0, -20, -5);
+                    sparkEmitterEmitter.spray.force = 0.0;
+                    sparkEmitterEmitter.spray.rate = 100;
+                    sparkEmitterEmitter.deadAge = 1000;
+
+                    ps.addParticle(sparkEmitterEmitter);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    // const rainRippleShader = new vic.shaders.RainRippleShader();
+                    // const rippleParticle = new Particle(threejs.shaders.ShaderTool.getSpriteMesh(rippleUniform, rainRippleShader), new threejs.particle.system.ParticlePool());
+                    // viewer.impl.matman().addMaterial("rippleParticle", rippleParticle.proxy.material, true);
+
+                    // // const rippleParticle = new Emitter();
+                    // rippleParticle.setParticle(sparkParticle);
+                    // rippleParticle.setScale(3,3,3);
+                    // // rippleParticle.setPosition(0, -100, 0);
+                    // // sparkParticle.addForce(new threejs.particle.system.forces.WindForce(1, new THREE.Vector3(1, 0, 0), 0, 0))
+                    // rippleParticle.randomPosition.x = 200;
+                    // rippleParticle.randomPosition.y = 200;
+                    // rippleParticle.randomPosition.z = 0;
+                    // rippleParticle.spray.verticalAngle = 3.14 * .5;
+                    // rippleParticle.spray.verticalRandom = .3;
+                    // rippleParticle.spray.horizonRandom = .3;
+                    // rippleParticle.spray.force = 15.0;
+                    // rippleParticle.spray.forceRandom = 4;
+                    // rippleParticle.spray.rate = 20;
+                    // rippleParticle.deadAge = .5;
+                    // // ps.addParticle(rippleParticle);
+
+                    // const rippleEmitter = new Emitter();
+                    // rippleEmitter.setParticle(rippleParticle);
+                    // rippleEmitter.setPosition(0, -20, -5);
+                    // rippleEmitter.spray.force = 0.0;
+                    // rippleEmitter.spray.rate = 100;
+                    // rippleEmitter.deadAge = 100;
+
+                    // ps.addParticle(rippleEmitter);
+
+
+
+
+
+
+                    viewer.setBackgroundColor(200, 200, 200, 0, 0, 0);
+
+                    // console.log(viewer.impl.matman()._materials);
+
+                    window.requestAnimationFrame(runAnimation)
+            }
+
+
+        }
+
+
+        let rippleUniform = undefined;
+        // const rippleUniform = threejs.shaders.ShaderTool.getSpriteUniform();
+
+        // const perfectFrameTime = 1000 / 60;
+        var deltaTime = 0;
+        var lastTimestamp = 0;
+        var needUpdate = true;
+        var wind = new THREE.Vector3(1, 0, 0);
+
+        function runAnimation(timestamp) {
+            if (needUpdate) window.requestAnimationFrame(runAnimation)
+            // window.requestAnimationFrame(runAnimation)
+
+            if (lastTimestamp == 0) lastTimestamp = timestamp;
+
+            deltaTime = (timestamp - lastTimestamp);
+            lastTimestamp = timestamp;
+
+            // console.log(1000/deltaTime);
+
+            if (ps) ps.update(deltaTime / 1000);
+
+            wind.x = Math.sin(timestamp * .001) * 0.5 + .5;
+            // wind.z = -.4;
+
+            if (rippleUniform)
+                rippleUniform.time.value = lastTimestamp / 1000;
+
+            // 如果沒有下這行的話，只有在畫面的視角有變動時，才會更新畫面
+            viewer.impl.sceneUpdated(true)
+        }
+
+        window.addEventListener('blur', (e) => {
+            needUpdate = false;
+        });
+    </script>
+</body>
+
+</html>

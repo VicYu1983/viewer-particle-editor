@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
+    <script src="../../../lib/viewer3D_extensions.js"></script>
+    <script src="../../../js/StarGlowShader.js"></script>
+    <script src="../../../js/StarGroundShader.js"></script>
+    <script src="../../../js/OutlineBackShader.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+
+
+    <script>
+
+
+        const Particle = threejs.particle.system.Particle;
+        const Emitter = threejs.particle.system.Emitter;
+        const ParticleSystem = threejs.particle.system.ParticleSystem;
+
+        let config = {
+            extensions: [],
+            disabledExtensions: {
+                measure: false,
+                section: false,
+            },
+
+            memory: {
+                limit: 32 * 1024 //32 GB
+            }
+        };
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        viewer = new Autodesk.Viewing.Viewer3D(viewerDiv);
+
+        // viewer = new Autodesk.Viewing.Private.GuiViewer3D(viewerDiv, config);
+
+        const options = {
+            docid: "../../../assets/testWall02.glb",
+            env: 'Local',
+            offline: 'true',
+            useADP: false
+        };
+        Autodesk.Viewing.Initializer(options, function () {
+            viewer.start();
+            viewer.loadModel(options.docid, undefined, onLoadSuccess, onLoadError);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+        viewer.setQualityLevel(false, false);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+        function onModelLoaded() {
+            console.log('等模型讀取完畢換材質才有作用');
+
+            // if (refMaterial) {
+            //     viewer.impl.matman().addMaterial("refMaterial", refMaterial, true);
+            // }
+
+            // const overlayScene = viewer.impl.createOverlayScene('myOverlayScene');
+
+            const outlineBackShader = new vic.shaders.OutlineBackShader();
+
+
+            const material = new THREE.ShaderMaterial({
+                fragmentShader: outlineBackShader.getFragmentShader(),
+                vertexShader: outlineBackShader.getVertexShader(),
+                uniforms: billboardUniform,
+                // side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+                transparent: true
+
+            });
+
+            material.supportsMrtNormals = true;
+            viewer.impl.matman().addMaterial("growEffectUniform", material, true);
+
+
+            const starGroundShader = new vic.shaders.StarGroundShader();
+
+            const starGroundShaderMaterial = new THREE.ShaderMaterial({
+                fragmentShader: starGroundShader.getFragmentShader(),
+                vertexShader: starGroundShader.getVertexShader(),
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+                transparent: true
+            });
+
+            starGroundShaderMaterial.supportsMrtNormals = true;
+            viewer.impl.matman().addMaterial("starGroundShaderMaterial", starGroundShaderMaterial, true);
+
+            // create shader end
+
+            // assign material start
+            const currentModel = viewer.impl.model;
+            const fragIds = Object.keys(currentModel.getData().fragments.fragId2dbId);
+            for (let i = 0; i < fragIds.length; ++i) {
+                const fragProxy = viewer.impl.getFragmentProxy(currentModel, fragIds[i]);
+                fragProxy.setMaterial(material);
+            }
+
+            // assign material end
+
+            // 取得讀取進來的模型的mesh
+            // const renderProxy = viewer.impl.getRenderProxy(currentModel, fragIds[0]);
+
+            const plane = new THREE.Mesh(new THREE.PlaneBufferGeometry(500, 500), starGroundShaderMaterial);
+            plane.position.y = -10;
+            plane.rotation.x = -Math.PI / 2;
+            viewer.impl.scene.add(plane);
+
+            // star particle
+
+            const starGlowShader = new vic.shaders.StarGlowShader();
+
+            ps.setViewer(viewer);
+            
+            const emitterMesh = threejs.shaders.ShaderTool.getSpriteMesh(new threejs.shaders.ParticleSpriteShader().getUniforms(), starGlowShader, 1.0, 1.0, THREE.AdditiveBlending, true);
+            viewer.impl.matman().addMaterial("starGlowMaterial", emitterMesh, true);
+
+            const p = new Particle(emitterMesh);
+            p.randomRotate = 3.14;
+            p.randomPosition.x = 150;
+            p.randomPosition.y = 20;
+            p.randomPosition.z = 130;
+            p.randomSize = 40;
+            p.rotateSpeed = .01;
+            p.size = 10;
+            p.sizeIn = .5;
+            p.sizeOut = .5;
+            p.deadAge = 30;
+            p.randomDeadAge = 1.0;
+            // ps.addParticle(p);
+
+            const e = new Emitter();
+            e.setPosition(0, 20, 0);
+            e.setParticle(p);
+            e.spray.rate = 70;
+
+            // e.spray.verticalAngle = 3.14 * 0.5;
+            e.spray.horizonRandom = 3.14;
+            e.spray.verticalRandom = 3.14;
+            e.spray.force = .1;
+            e.deadAge = .3;
+            ps.addParticle(e);
+
+            viewer.setBackgroundColor(200, 200, 200, 0, 0, 0);
+
+
+            window.requestAnimationFrame(runAnimation);
+        }
+
+        const billboardUniform = {
+            time:{
+                type:'f',
+                value:0
+            }
+        }
+
+        const ps = ParticleSystem.getInstance();
+
+        var deltaTime = 0;
+        var lastTimestamp = 0;
+        var needUpdate = true;
+
+        function runAnimation(timestamp) {
+            if (needUpdate) window.requestAnimationFrame(runAnimation)
+
+            deltaTime = (timestamp - lastTimestamp);
+            lastTimestamp = timestamp;
+
+            if (ps) ps.update(deltaTime / 1000);
+
+            billboardUniform.time.value = lastTimestamp / 1000;
+
+            // 如果沒有下這行的話，只有在畫面的視角有變動時，才會更新畫面
+            viewer.impl.sceneUpdated(true)
+        }
+
+        window.addEventListener('blur', (e) => {
+            needUpdate = false;
+        });
+    </script>
+</body>
+
+</html>

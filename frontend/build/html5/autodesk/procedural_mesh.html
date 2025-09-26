@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
+    <script src="../../../lib/viewer3D_extensions.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+    <div style="position: absolute; ">
+        <input oninput="setWidth(event)" type="range" min="0.1" max="3.0" value=".3" step="0.01" class="slider">
+        <input oninput="setHeight(event)" type="range" min="0.1" max="3.0" value=".3" step="0.01" class="slider">
+        <input oninput="setDeptch(event)" type="range" min=".1" max="5.0" value="1.0" step="0.01" class="slider">
+        <input oninput="setHorizonAngle(event)" type="range" min="0.0" max="90.0" value="15.0" step="0.01"
+            class="slider">
+        <input oninput="setVerticalAngle(event)" type="range" min="0.0" max="90.0" value="15.0" step="0.01"
+            class="slider">
+    </div>
+    <script>
+
+        const BasicShader = threejs.shaders.BasicShader;
+        class CameraShader extends BasicShader {
+            constructor() {
+                super();
+            }
+
+            doWriteFragmentShader() {
+                return `
+                float value = (vUv.x + time * -.0005) * 1.5;
+                float mask = value - floor(value);
+                vec3 col = mix(vec3(.3, .5, .8), vec3(.3, .3, .9), vUv.x);
+                
+
+                float value2 = vUv.x * 10.0;
+                float mask2 = abs(sin(value2));
+                mask2 = smoothstep(0.999, 1.0, mask2);
+
+                gl_FragColor = vec4(col, mask * .7);
+                `;
+            }
+        }
+
+        let config = {
+            extensions: [],
+            disabledExtensions: {
+                measure: false,
+                section: false,
+            },
+
+            memory: {
+                limit: 32 * 1024 //32 GB
+            }
+        };
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        viewer = new Autodesk.Viewing.Viewer3D(viewerDiv);
+
+        const options = {
+            docid: "../../../assets/sample2/3d.svf",
+            env: 'Local',
+            offline: 'true',
+            useADP: false
+        };
+
+        Autodesk.Viewing.Initializer(options, function () {
+            viewer.start();
+            viewer.loadModel(options.docid, undefined, onLoadSuccess, onLoadError);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+        function setMaterialToId(viewer, dbid, material) {
+            const fragProxys = getProxy(viewer, dbid);
+            if (fragProxys.length > 0) {
+                for (let i = 0; i < fragProxys.length; ++i) {
+                    const fragProxy = fragProxys[i];
+                    fragProxy.setMaterial(material);
+                }
+            }
+        }
+
+        function getProxy(viewer, dbid) {
+            const currentModel = viewer.impl.model;
+            const fragProxys = [];
+            viewer.model.getData().fragments.fragId2dbId.forEach(function (_dbId, fragId) {
+                if (_dbId === dbid) {
+                    fragProxys.push(viewer.impl.getFragmentProxy(currentModel, fragId));
+                }
+            });
+            console.log(fragProxys);
+            return fragProxys;
+        }
+
+
+        let loadCount = 0;
+        let currentViewpoint = undefined;
+
+        function onModelLoaded(e) {
+            console.log('等模型讀取完畢換材質才有作用');
+
+
+            // 创建一个自定义几何体
+            const geometry = new THREE.BufferGeometry();
+
+            // 定义顶点坐标
+            const vertices = new Float32Array([
+                0, -1, 1,
+                0, 1, 1,
+                0, 1, -1,
+                0, -1, -1,
+                1, -1, 1,
+                1, 1, 1,
+                1, 1, -1,
+                1, -1, -1
+            ]);
+
+            // 定义 UV 坐标，与顶点坐标一一对应
+            const uvs = new Float32Array([
+                0.0, 1.0,
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 1.0,
+                1.0, 1.0,
+                1.0, 0.0,
+                1.0, 0.0,
+                1.0, 1.0
+            ]);
+
+            // 定义面的索引，以定义四边形
+            const indices = new Uint32Array([
+                0, 1, 2, // 第一个三角形
+                0, 2, 3, // 第二个三角形
+                4, 7, 6,
+                4, 6, 5,
+                4, 0, 3,
+                4, 3, 7,
+                5, 1, 0,
+                5, 0, 4,
+                1, 5, 6,
+                1, 6, 2,
+                6, 7, 3,
+                6, 3, 2
+            ]);
+
+            vertexBuffer = new THREE.BufferAttribute(vertices, 3);
+            vertexBuffer.needsUpdate = true;
+
+            // viewer 7.x ver
+            // 创建顶点属性并将顶点坐标数据添加到几何体中
+            geometry.setAttribute('position', vertexBuffer);
+
+            // 创建 UV 属性并将 UV 坐标数据添加到几何体中
+            geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+
+            // 创建面的索引属性并将索引数据添加到几何体中
+            geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+
+            // 创建材质
+            // const texture = new THREE.TextureLoader().load('your_texture.jpg');
+            // const material = new THREE.MeshBasicMaterial({ map: texture });
+            const material = threejs.shaders.ShaderTool.getMaterial(undefined, new CameraShader(), 2, true, false);
+            uniforms = material.uniforms;
+            material.side = THREE.DoubleSide;
+
+            viewer.impl.matman().addMaterial('material', material, true);
+
+            // 创建 Procedural Mesh
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.z = .85;
+            mesh.position.y = -.1;
+            mesh.rotation.z = -3.14 * 0.5;
+
+            // 添加 Mesh 到场景中
+            viewer.impl.scene.add(mesh);
+            viewer.setBackgroundColor(400, 400, 400, 0, 0, 0);
+
+            window.requestAnimationFrame(runAnimation)
+        }
+
+
+        let vertexBuffer = undefined;
+        let depth = 1;
+        let horizonAngle = 15;
+        let verticalAngle = 15;
+        let width = .3;
+        let height = .3;
+        let uniforms = undefined;
+
+        // const perfectFrameTime = 1000 / 60;
+        var deltaTime = 0;
+        var lastTimestamp = 0;
+        var needUpdate = true;
+        // var wind = new THREE.Vector3(1, 0, 0);
+
+        const waterMeshs = [];
+        const waterUniformses = [];
+
+        function setDeptch(e) {
+            depth = e.target.value;
+            console.log('depth:' + depth);
+        }
+
+        function setHorizonAngle(e) {
+            horizonAngle = e.target.value;
+            console.log('horizonAngle:' + horizonAngle);
+        }
+
+        function setVerticalAngle(e) {
+            verticalAngle = e.target.value;
+            console.log('verticalAngle:' + verticalAngle);
+        }
+
+        function setWidth(e) {
+            width = e.target.value;
+            console.log('width:' + width);
+        }
+
+        function setHeight(e) {
+            height = e.target.value;
+            console.log('height:' + height);
+        }
+
+        function runAnimation(timestamp) {
+            if (needUpdate) window.requestAnimationFrame(runAnimation)
+            // window.requestAnimationFrame(runAnimation)
+
+            deltaTime = (timestamp - lastTimestamp);
+            lastTimestamp = timestamp;
+
+            if(uniforms)
+                uniforms.time.value = lastTimestamp;
+
+            if (vertexBuffer) {
+
+                const y = width * 0.5;
+                vertexBuffer.setY(0, -y);
+                vertexBuffer.setY(3, -y);
+                vertexBuffer.setY(4, -y);
+                vertexBuffer.setY(7, -y);
+                vertexBuffer.setY(1, y);
+                vertexBuffer.setY(2, y);
+                vertexBuffer.setY(5, y);
+                vertexBuffer.setY(6, y);
+
+                const z = height * 0.5;
+                vertexBuffer.setZ(0, z);
+                vertexBuffer.setZ(1, z);
+                vertexBuffer.setZ(4, z);
+                vertexBuffer.setZ(5, z);
+                vertexBuffer.setZ(2, -z);
+                vertexBuffer.setZ(3, -z);
+                vertexBuffer.setZ(6, -z);
+                vertexBuffer.setZ(7, -z);
+
+                vertexBuffer.setX(4, depth);
+                vertexBuffer.setX(5, depth);
+                vertexBuffer.setX(6, depth);
+                vertexBuffer.setX(7, depth);
+
+                let theta = 360 - horizonAngle - 90;
+                let thetaRadian = theta / 180 * Math.PI;
+
+                // 正弦定理
+                const horizonRadian = horizonAngle / 180 * Math.PI;
+                const offsetY = (Math.sin(horizonRadian) * depth) / Math.sin(thetaRadian);
+                vertexBuffer.setY(4, -y + offsetY);
+                vertexBuffer.setY(7, -y + offsetY);
+                vertexBuffer.setY(5, y - offsetY);
+                vertexBuffer.setY(6, y - offsetY);
+
+                theta = 360 - verticalAngle - 90;
+                thetaRadian = theta / 180 * Math.PI;
+
+                // 正弦定理
+                const verticalRadian = verticalAngle / 180 * Math.PI;
+                const offsetZ = (Math.sin(verticalRadian) * depth) / Math.sin(thetaRadian);
+                vertexBuffer.setZ(4, z - offsetZ);
+                vertexBuffer.setZ(5, z - offsetZ);
+                vertexBuffer.setZ(6, -z + offsetZ);
+                vertexBuffer.setZ(7, -z + offsetZ);
+
+                vertexBuffer.needsUpdate = true;
+            }
+
+            // 如果沒有下這行的話，只有在畫面的視角有變動時，才會更新畫面
+            viewer.impl.sceneUpdated(true)
+        }
+
+        window.addEventListener('blur', (e) => {
+            needUpdate = false;
+        });
+    </script>
+</body>
+
+</html>

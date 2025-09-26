@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
+    <script src="../../../lib/viewer3D_extensions.js"></script>
+    <script src="../../../js/GlowEffectShader.js"></script>
+</head>
+
+<body style="margin:0px">
+
+    <div style="position: absolute; width:100%; height:100%" id="viewerDiv"></div>
+    <script>
+
+        const viewerDiv = document.getElementById('viewerDiv');
+        viewer = new Autodesk.Viewing.Viewer3D(viewerDiv);
+
+        const options = {
+            docid: "../../../assets/plane_uv_gltf2.glb",
+            // docid: "./assets/outlineCubeUV.glb",
+            env: 'Local',
+            offline: 'true',
+            useADP: false
+        };
+        Autodesk.Viewing.Initializer(options, function () {
+            viewer.start();
+
+            viewer.loadModel(options.docid, undefined, onLoadSuccess, onLoadError);
+        });
+
+        viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, onModelLoaded);
+        viewer.setQualityLevel(false, false);
+
+        function onLoadSuccess() {
+            viewer.setProgressiveRendering(true);
+        }
+
+        function onLoadError(event) {
+            console.log('load fail');
+        }
+
+        function onModelLoaded() {
+            console.log('等模型讀取完畢換材質才有作用');
+
+            // create shader start
+            const glowEffectShader = new vic.shaders.GlowEffectShader();
+            uniforms = glowEffectShader.getUniforms();
+
+            const material = new THREE.ShaderMaterial({
+                fragmentShader: glowEffectShader.getFragmentShader(),
+                vertexShader: glowEffectShader.getVertexShader(),
+                uniforms: uniforms,
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+
+            material.supportsMrtNormals = true;
+            viewer.impl.matman().addMaterial("growEffectUniform", material, true)
+            // create shader end
+
+            // assign material start
+            const currentModel = viewer.impl.model;
+            const fragIds = Object.keys(currentModel.getData().fragments.fragId2dbId);
+            const fragProxy = viewer.impl.getFragmentProxy(currentModel, fragIds[0]);
+            fragProxy.setMaterial(material);
+            // assign material end
+
+            runAnimation();
+        }
+
+        let uniforms = undefined;
+        
+        function runAnimation() {
+            if(uniforms)
+                uniforms.time.value += 0.01;
+
+            window.requestAnimationFrame(runAnimation)
+
+            // 如果沒有下這行的話，只有在畫面的視角有變動時，才會更新畫面
+            viewer.impl.sceneUpdated(true)
+        }
+
+
+    </script>
+</body>
+
+</html>
