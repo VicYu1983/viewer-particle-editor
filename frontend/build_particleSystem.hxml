@@ -5,4 +5,4 @@
 
 -lib haxeui-core
 -lib haxeui-html5
--lib openfl
+-lib openfl:8.9.7
